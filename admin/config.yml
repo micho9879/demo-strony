@@ -1,0 +1,192 @@
+backend:
+  name: github
+  repo: micho9879/demo-strony
+  branch: main
+
+media_folder: "public/img"
+public_folder: "/img"
+
+collections:
+  - name: "courses"
+    label: "Kursy UDT (Baza Pytań)"
+    description: "Zarządzaj pytaniami testowymi dla poszczególnych kursów"
+    files:
+      - label: "Podesty Ruchome"
+        name: "podesty"
+        file: "public/data/podesty.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie, np. nazwa_pliku.jpg)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie, np. nazwa_pliku.jpg)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+
+      - label: "Suwnice"
+        name: "suwnice"
+        file: "public/data/suwnice.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+
+      - label: "Wózki Widłowe Podnośnikowe"
+        name: "wozki-podnosnikowe"
+        file: "public/data/wozki-podnosnikowe.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+
+      - label: "Wózki Widłowe Specjalizowane"
+        name: "wozki-specjalizowane"
+        file: "public/data/wozki-specjalizowane.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+
+      - label: "Żurawie Przenośne"
+        name: "zurawie-przenosne"
+        file: "public/data/zurawie-przenosne.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+
+      - label: "Żurawie Samojezdne"
+        name: "zurawie-samojezdne"
+        file: "public/data/zurawie-samojezdne.json"
+        fields:
+          - label: "Pytania Główne (UDT)"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+          - label: "Inne Pytania (Dodatkowa zakładka)"
+            name: "other_questions"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
