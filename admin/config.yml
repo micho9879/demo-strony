@@ -3,7 +3,7 @@ backend:
   repo: micho9879/demo-strony
   branch: main
 
-media_folder: "public/img"
+media_folder: "img"
 public_folder: "/img"
 
 collections:
@@ -13,7 +13,7 @@ collections:
     files:
       - label: "Podesty Ruchome"
         name: "podesty"
-        file: "public/data/podesty.json"
+        file: "data/podesty.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
@@ -43,7 +43,7 @@ collections:
 
       - label: "Suwnice"
         name: "suwnice"
-        file: "public/data/suwnice.json"
+        file: "data/suwnice.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
@@ -73,7 +73,7 @@ collections:
 
       - label: "Wózki Widłowe Podnośnikowe"
         name: "wozki-podnosnikowe"
-        file: "public/data/wozki-podnosnikowe.json"
+        file: "data/wozki-podnosnikowe.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
@@ -103,7 +103,7 @@ collections:
 
       - label: "Wózki Widłowe Specjalizowane"
         name: "wozki-specjalizowane"
-        file: "public/data/wozki-specjalizowane.json"
+        file: "data/wozki-specjalizowane.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
@@ -133,7 +133,7 @@ collections:
 
       - label: "Żurawie Przenośne"
         name: "zurawie-przenosne"
-        file: "public/data/zurawie-przenosne.json"
+        file: "data/zurawie-przenosne.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
@@ -163,7 +163,7 @@ collections:
 
       - label: "Żurawie Samojezdne"
         name: "zurawie-samojezdne"
-        file: "public/data/zurawie-samojezdne.json"
+        file: "data/zurawie-samojezdne.json"
         fields:
           - label: "Pytania Główne (UDT)"
             name: "questions"
