@@ -186,7 +186,7 @@ const GROUPS = {
 
 // ─── STAN ───────────────────────────────────────────────────
 const S = {
-  group: null, cat: null, qs: [],
+  group: null, cat: null, qs: [], bhp: [], opisy: [],
   bi: 0,
   ti: 0, tAns: false,
   eq: [], ei: 0, ea: [], et: EXAM_T, eInt: null,
@@ -507,6 +507,19 @@ async function getQs(c) {
     if (v >= 1) q.correct = v - 1;
   });
   S.catTotals[c] = S.qs.length;
+
+  try {
+    const rBhp = await fetch(`data/${c}_bhp.json`, { cache: 'no-cache' });
+    const dBhp = await rBhp.json();
+    S.bhp = dBhp.items || [];
+  } catch(e) { S.bhp = []; }
+
+  try {
+    const rOp = await fetch(`data/${c}_opisy.json`, { cache: 'no-cache' });
+    const dOp = await rOp.json();
+    S.opisy = dOp.items || [];
+  } catch(e) { S.opisy = []; }
+
   return S.qs;
 }
 
@@ -544,7 +557,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'result', 'clipboard'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'result', 'clipboard', 'bhpList', 'opisyList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -560,7 +573,8 @@ function go(v) {
 
   const m = {
     home: vHome, subcats: vSubcats, login: vLogin, menu: vMenu, resume: vResume,
-    cheat: vCheat, train: vTrain, exam: vExam, result: vResult, clipboard: vClipboard
+    cheat: vCheat, train: vTrain, exam: vExam, result: vResult, clipboard: vClipboard,
+    bhpList: vBhpList, opisyList: vOpisyList
   };
   if (m[v]) m[v]();
   document.body.className = 'view-' + v;
@@ -792,6 +806,12 @@ function vMenu() {
       <button class="mbtn mbtn--hard" id="md"><div class="mbtn__ic mbtn__ic--y">${I.clip}</div>
         <div><div class="mbtn__t">Trudne pytania (Schowek)</div>
         <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań · pokaż instruktorowi</div></div></button>
+      <button class="mbtn" id="me"><div class="mbtn__ic mbtn__ic--y">${I.alrt}</div>
+        <div><div class="mbtn__t">Pytania BHP</div>
+        <div class="mbtn__d">${S.bhp ? S.bhp.length : 0} pytań z odpowiedziami</div></div></button>
+      <button class="mbtn" id="mf"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
+        <div><div class="mbtn__t">Opisy i Definicje</div>
+        <div class="mbtn__d">${S.opisy ? S.opisy.length : 0} opisów w bazie</div></div></button>
     </div></div>`;
 
   $('ma').onclick = () => { S.bi = 0; go('cheat'); };
@@ -802,6 +822,8 @@ function vMenu() {
   };
   $('mc').onclick = startExam;
   $('md').onclick = () => go('clipboard');
+  $('me').onclick = () => go('bhpList');
+  $('mf').onclick = () => go('opisyList');
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -1118,6 +1140,49 @@ function vResult() {
     img.style.cursor = 'zoom-in';
     img.onclick = () => olb(img.src);
   });
+}
+
+// ═════════════════════════════════════════════════════════════
+// WIDOK — Listy (BHP / Opisy)
+// ═════════════════════════════════════════════════════════════
+function renderList(title, data, subtitle) {
+  let content = (!data || data.length === 0) ? `<div class="clip-empty">
+      <div class="clip-empty__ic">${I.file}</div>
+      <h2>Brak wpisów</h2>
+      <p>Dodaj wpisy w panelu CMS, aby się tu pojawiły.</p>
+    </div>` :
+    data.map((q, idx) => `
+      <div class="clip-card">
+        <div class="clip-card__top">
+          <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
+        </div>
+        ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
+        <div class="odp-lista">
+          <div class="odp-btn odp-btn--ok" style="cursor:default;align-items:flex-start">
+            <span class="odp-btn__t" style="white-space:pre-wrap;text-align:left">${q.answer || ''}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+  appEl.innerHTML = `<div>
+    <header class="hdr"><h1 style="font-size:1.3rem">${title}</h1>
+      <p>${subtitle}</p></header>
+    <div class="clip-list">${content}</div>
+    <div class="r-acts" style="margin-top:16px">
+      <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
+    </div>
+  </div>`;
+  bindImgs(appEl);
+  $('clip-back').onclick = () => go('menu');
+}
+
+function vBhpList() {
+  renderList("Pytania BHP", S.bhp, CATS[S.cat].label);
+}
+
+function vOpisyList() {
+  renderList("Opisy i Definicje", S.opisy, CATS[S.cat].label);
 }
 
 // ─── HELPER ─────────────────────────────────────────────────
