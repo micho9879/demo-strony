@@ -20,7 +20,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
@@ -37,7 +37,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Pytanie", name: "question", widget: "string"}
               - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/podesty_opisy.json"
@@ -49,7 +49,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
 
   - name: "suwnice"
     label: "Suwnice"
@@ -64,7 +64,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
@@ -81,7 +81,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Pytanie", name: "question", widget: "string"}
               - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/suwnice_opisy.json"
@@ -93,7 +93,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
 
   - name: "wozki-podnosnikowe"
     label: "Wózki Widłowe Podnośnikowe"
@@ -108,7 +108,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
@@ -125,7 +125,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Pytanie", name: "question", widget: "string"}
               - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/wozki-podnosnikowe_opisy.json"
@@ -137,7 +137,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
 
   - name: "wozki-specjalizowane"
     label: "Wózki Widłowe Specjalizowane"
@@ -152,7 +152,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
@@ -169,7 +169,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Pytanie", name: "question", widget: "string"}
               - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/wozki-specjalizowane_opisy.json"
@@ -181,7 +181,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
 
   - name: "zurawie-przenosne"
     label: "Żurawie Przenośne"
@@ -196,7 +196,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
@@ -213,7 +213,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Pytanie", name: "question", widget: "string"}
               - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/zurawie-przenosne_opisy.json"
@@ -225,7 +225,7 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
 
   - name: "zurawie-samojezdne"
     label: "Żurawie Samojezdne"
@@ -240,7 +240,7 @@ collections:
             fields:
               - {label: "ID pytania", name: "id", widget: "number"}
               - {label: "Treść pytania", name: "question", widget: "string"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
               - label: "Opcje odpowiedzi"
                 name: "options"
                 widget: "list"
