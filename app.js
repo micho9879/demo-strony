@@ -505,6 +505,7 @@ async function getQs(c) {
   S.qs.forEach(q => {
     const v = parseInt(q.correct);
     if (v >= 1) q.correct = v - 1;
+    if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
   });
   S.catTotals[c] = S.qs.length;
 
@@ -512,12 +513,18 @@ async function getQs(c) {
     const rBhp = await fetch(`data/${c}_bhp.json`, { cache: 'no-cache' });
     const dBhp = await rBhp.json();
     S.bhp = dBhp.items || [];
+    S.bhp.forEach(q => {
+      if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
+    });
   } catch(e) { S.bhp = []; }
 
   try {
     const rOp = await fetch(`data/${c}_opisy.json`, { cache: 'no-cache' });
     const dOp = await rOp.json();
     S.opisy = dOp.items || [];
+    S.opisy.forEach(q => {
+      if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
+    });
   } catch(e) { S.opisy = []; }
 
   return S.qs;
