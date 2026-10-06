@@ -59,12 +59,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "suwnice"
     label: "Suwnice"
@@ -110,12 +106,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "wozki-podnosnikowe"
     label: "Wózki Widłowe Podnośnikowe"
@@ -161,12 +153,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "wozki-specjalizowane"
     label: "Wózki Widłowe Specjalizowane"
@@ -212,12 +200,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "zurawie-przenosne"
     label: "Żurawie Przenośne"
@@ -263,12 +247,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "zurawie-samojezdne"
     label: "Żurawie Samojezdne"
@@ -314,12 +294,8 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "bhp"
     label: "Szkolenie BHP"
@@ -365,9 +341,5 @@ collections:
             required: false
             fields:
               - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - label: "Zakresy ID (np. od 207 do 244)"
-                name: "ranges"
-                widget: "list"
-                fields:
-                  - {label: "Od ID", name: "min", widget: "number"}
-                  - {label: "Do ID", name: "max", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}

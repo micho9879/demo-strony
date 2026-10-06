@@ -508,7 +508,7 @@ async function getQs(c) {
       poolACount: dSet.pool_a_count !== undefined ? dSet.pool_a_count : 3,
       rules: (dSet.rules || []).map(r => ({
         count: r.count,
-        ranges: (r.ranges || []).map(rng => [rng.min, rng.max])
+        ranges: [[r.min, r.max]]
       }))
     };
   } catch(e) { 

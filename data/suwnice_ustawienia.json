@@ -4,13 +4,9 @@
   "pool_a_count": 3,
   "rules": [
     {
-      "ranges": [
-        {
-          "min": 153,
-          "max": 220
-        }
-      ],
-      "count": 3
+      "count": 3,
+      "min": 153,
+      "max": 220
     }
   ]
 }
