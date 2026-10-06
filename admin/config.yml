@@ -6,6 +6,14 @@ backend:
 media_folder: "img"
 public_folder: "/img"
 
+media_libraries:
+  all:
+    transformations:
+      raster_image:
+        format: webp
+        width: 1920
+        quality: 85
+
 collections:
   - name: "podesty"
     label: "Podesty Ruchome"
