@@ -50,7 +50,10 @@ collections:
         name: "ustawienia"
         file: "data/podesty_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -98,7 +101,10 @@ collections:
         name: "ustawienia"
         file: "data/suwnice_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -146,7 +152,10 @@ collections:
         name: "ustawienia"
         file: "data/wozki-podnosnikowe_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -194,7 +203,10 @@ collections:
         name: "ustawienia"
         file: "data/wozki-specjalizowane_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -242,7 +254,10 @@ collections:
         name: "ustawienia"
         file: "data/zurawie-przenosne_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -290,7 +305,10 @@ collections:
         name: "ustawienia"
         file: "data/zurawie-samojezdne_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false
@@ -338,7 +356,10 @@ collections:
         name: "ustawienia"
         file: "data/bhp_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań specjalistycznych"
+          - {label: "Całkowita liczba pytań na egzaminie", name: "exam_total", widget: "number", default: 15}
+          - {label: "Maksymalne ID dla pytań ogólnych (Pula A)", name: "pool_a_max", widget: "number", default: 80}
+          - {label: "Ile pytań ogólnych losować (Pula A)?", name: "pool_a_count", widget: "number", default: 3}
+          - label: "Reguły losowania pytań specjalistycznych (Pula B)"
             name: "rules"
             widget: "list"
             required: false

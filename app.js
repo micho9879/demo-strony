@@ -97,20 +97,21 @@ const EXAM_RULES = {};
 
 // ─── GENERATOR EGZAMINU ────────────────────────────
 function generateExam(allQs, cat) {
-  const POOL_A_MAX = 80;  // ID 1–80 = wiedza ogólna
-  const N_A = 3;          // Zawsze 3 pytania z wiedzy ogólnej
-  const EXAM_TOTAL = 15;  // Cały egzamin zawsze ma 15 pytań
+  const conf = EXAM_RULES[cat] || { total: 15, poolAMax: 80, poolACount: 3, rules: [] };
+  const POOL_A_MAX = conf.poolAMax;  
+  const N_A = conf.poolACount;          
+  const EXAM_TOTAL = conf.total;  
 
   let exam = [];
   let usedIds = new Set();
 
-  // 1. PULA A (Wiedza ogólna: 1-80) - 3 pytania
+  // 1. PULA A (Wiedza ogólna)
   let poolA = allQs.filter(q => q.id >= 1 && q.id <= POOL_A_MAX);
   let pickedA = shuf(poolA).slice(0, N_A);
   pickedA.forEach(q => { exam.push(q); usedIds.add(q.id); });
 
   // 2. PULA B (Reguły przedziałów dla danej kategorii)
-  const rules = EXAM_RULES[cat] || [];
+  const rules = conf.rules || [];
   for (const rule of rules) {
     // Filtruj pytania pasujące do przedziałów w tej regule
     let rulePool = allQs.filter(q => {
@@ -123,7 +124,7 @@ function generateExam(allQs, cat) {
   }
 
   // 3. PULA C (Wiedza specjalistyczna - reszta)
-  // Dopełniamy do 15 pytań z pozostałych (omijając Pulę A i już wybrane z Puli B)
+  // Dopełniamy do EXAM_TOTAL z pozostałych (omijając Pulę A i już wybrane z Puli B)
   if (exam.length < EXAM_TOTAL) {
     let poolC = allQs.filter(q => !usedIds.has(q.id) && q.id > POOL_A_MAX);
     let needed = EXAM_TOTAL - exam.length;
@@ -501,11 +502,18 @@ async function getQs(c) {
   try {
     const rSet = await fetch(`data/${c}_ustawienia.json`, { cache: 'no-cache' });
     const dSet = await rSet.json();
-    EXAM_RULES[c] = (dSet.rules || []).map(r => ({
-      count: r.count,
-      ranges: (r.ranges || []).map(rng => [rng.min, rng.max])
-    }));
-  } catch(e) { EXAM_RULES[c] = []; }
+    EXAM_RULES[c] = {
+      total: dSet.exam_total !== undefined ? dSet.exam_total : 15,
+      poolAMax: dSet.pool_a_max !== undefined ? dSet.pool_a_max : 80,
+      poolACount: dSet.pool_a_count !== undefined ? dSet.pool_a_count : 3,
+      rules: (dSet.rules || []).map(r => ({
+        count: r.count,
+        ranges: (r.ranges || []).map(rng => [rng.min, rng.max])
+      }))
+    };
+  } catch(e) { 
+    EXAM_RULES[c] = { total: 15, poolAMax: 80, poolACount: 3, rules: [] }; 
+  }
 
   return S.qs;
 }
