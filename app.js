@@ -173,7 +173,13 @@ const GROUPS = {
     desc: 'TESTY UDT - Szkolenie operatorów urządzeń transportu bliskiego.',
     ic: 'udt_group',
     icons: ['wozki-podnosnikowe.svg', 'zurawie-przenosne.svg', 'podesty.svg', 'wozki-specjalizowane.svg', 'suwnice.svg'],
-    cats: ['wozki-podnosnikowe', 'wozki-specjalizowane', 'podesty', 'zurawie-przenosne', 'zurawie-samojezdne', 'suwnice', 'bhp'],
+    cats: ['wozki-podnosnikowe', 'wozki-specjalizowane', 'podesty', 'zurawie-przenosne', 'zurawie-samojezdne', 'suwnice'],
+  },
+  bhp: {
+    label: 'Szkolenia BHP',
+    desc: 'Bezpieczeństwo i Higiena Pracy',
+    ic: 'helmet',
+    cats: ['bhp'],
   }
 };
 
@@ -483,8 +489,9 @@ function startAuthListener(currentPassword) {
   });
 }
 
-async function getDbPassword() {
-  const dSnap = await getDoc(doc(db, "kursy-udt", "udt-haslo"));
+async function getDbPassword(grp) {
+  const docId = grp === 'bhp' ? 'bhp-haslo' : 'udt-haslo';
+  const dSnap = await getDoc(doc(db, "kursy-udt", docId));
   if (dSnap.exists()) return dSnap.data().haslo;
   return null;
 }
@@ -607,12 +614,18 @@ function vHome() {
     d.className = 'crd'; d.id = 'g-' + k;
     d.style.width = '100%';
     d.style.maxWidth = '360px';
-    if (k === 'bhp') d.style.display = 'none';
     d.innerHTML = `<div class="crd__ic" data-ic="${grp.ic}"></div>
       <div class="crd__t">${grp.label}</div>
       <div class="crd__d">${grp.desc}</div>
       <span class="crd__arr">${I.chR}</span>`;
-    d.onclick = () => { S.group = k; go('subcats'); };
+    d.onclick = () => { 
+      S.group = k;
+      if (k === 'bhp') {
+        pickCat('bhp');
+      } else {
+        go('subcats'); 
+      }
+    };
     g.appendChild(d);
 
     // Render ikon
@@ -673,7 +686,7 @@ async function pickCat(k) {
   const sv = getAuth(k);
   if (sv) {
     try {
-      const dbPw = await getDbPassword();
+      const dbPw = await getDbPassword(S.group);
       if (dbPw && dbPw === sv) {
         startAuthListener(dbPw);
         history.pushState({ testActive: true }, "Testy UDT", "#test");
@@ -734,7 +747,7 @@ function vLogin() {
     btnSpan.textContent = 'Sprawdzanie...';
 
     try {
-      const dbPw = await getDbPassword();
+      const dbPw = await getDbPassword(S.group);
       if (dbPw === v) {
         if (rem.checked) setAuth(S.cat, v);
         startAuthListener(v);
