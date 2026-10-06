@@ -1,8 +1,10 @@
 {
-  "exam_total": 15,
-  "pool_a_max": 80,
-  "pool_a_count": 3,
   "rules": [
+    {
+      "count": 3,
+      "min": 1,
+      "max": 80
+    },
     {
       "count": 4,
       "min": 222,
@@ -11,6 +13,11 @@
     {
       "count": 3,
       "min": 299,
+      "max": 367
+    },
+    {
+      "count": 5,
+      "min": 81,
       "max": 367
     }
   ]

@@ -97,43 +97,31 @@ const EXAM_RULES = {};
 
 // ─── GENERATOR EGZAMINU ────────────────────────────
 function generateExam(allQs, cat) {
-  const conf = EXAM_RULES[cat] || { total: 15, poolAMax: 80, poolACount: 3, rules: [] };
-  const POOL_A_MAX = conf.poolAMax;  
-  const N_A = conf.poolACount;          
-  const EXAM_TOTAL = conf.total;  
+  const conf = EXAM_RULES[cat] || { rules: [] };
+  const rules = conf.rules || [];
 
   let exam = [];
   let usedIds = new Set();
 
-  // 1. PULA A (Wiedza ogólna)
-  let poolA = allQs.filter(q => q.id >= 1 && q.id <= POOL_A_MAX);
-  let pickedA = shuf(poolA).slice(0, N_A);
-  pickedA.forEach(q => { exam.push(q); usedIds.add(q.id); });
-
-  // 2. PULA B (Reguły przedziałów dla danej kategorii)
-  const rules = conf.rules || [];
   for (const rule of rules) {
-    // Filtruj pytania pasujące do przedziałów w tej regule
     let rulePool = allQs.filter(q => {
       if (usedIds.has(q.id)) return false;
       return rule.ranges.some(([min, max]) => q.id >= min && q.id <= max);
     });
-    // Losuj z przefiltrowanej puli
+    
     let pickedRule = shuf(rulePool).slice(0, rule.count);
     pickedRule.forEach(q => { exam.push(q); usedIds.add(q.id); });
   }
 
-  // 3. PULA C (Wiedza specjalistyczna - reszta)
-  // Dopełniamy do EXAM_TOTAL z pozostałych (omijając Pulę A i już wybrane z Puli B)
-  if (exam.length < EXAM_TOTAL) {
-    let poolC = allQs.filter(q => !usedIds.has(q.id) && q.id > POOL_A_MAX);
-    let needed = EXAM_TOTAL - exam.length;
-    let pickedC = shuf(poolC).slice(0, needed);
-    pickedC.forEach(q => { exam.push(q); usedIds.add(q.id); });
+  // W razie gdyby zdefiniowane reguły nie ułożyły wystarczająco pytań (np. braki w konfiguracji CMS)
+  // i egzamin miał mniej niż 15 pytań, dobieramy losowo cokolwiek ze wszystkich, żeby zapobiec błędom
+  if (exam.length < 15) {
+    let needed = 15 - exam.length;
+    let fallback = shuf(allQs.filter(q => !usedIds.has(q.id))).slice(0, needed);
+    fallback.forEach(q => exam.push(q));
   }
 
-  // 4. Mieszanie całości, by pytania z Pul A, B, C były losowo ułożone
-  return shuf(exam).slice(0, EXAM_TOTAL);
+  return shuf(exam);
 }
 
 const CATS = {
@@ -503,16 +491,13 @@ async function getQs(c) {
     const rSet = await fetch(`data/${c}_ustawienia.json`, { cache: 'no-cache' });
     const dSet = await rSet.json();
     EXAM_RULES[c] = {
-      total: dSet.exam_total !== undefined ? dSet.exam_total : 15,
-      poolAMax: dSet.pool_a_max !== undefined ? dSet.pool_a_max : 80,
-      poolACount: dSet.pool_a_count !== undefined ? dSet.pool_a_count : 3,
       rules: (dSet.rules || []).map(r => ({
         count: r.count,
         ranges: [[r.min, r.max]]
       }))
     };
   } catch(e) { 
-    EXAM_RULES[c] = { total: 15, poolAMax: 80, poolACount: 3, rules: [] }; 
+    EXAM_RULES[c] = { rules: [] }; 
   }
 
   return S.qs;
