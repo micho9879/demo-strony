@@ -46,6 +46,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/podesty_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "suwnice"
     label: "Suwnice"
@@ -78,6 +94,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/suwnice_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "wozki-podnosnikowe"
     label: "Wózki Widłowe Podnośnikowe"
@@ -110,6 +142,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/wozki-podnosnikowe_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "wozki-specjalizowane"
     label: "Wózki Widłowe Specjalizowane"
@@ -142,6 +190,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/wozki-specjalizowane_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "zurawie-przenosne"
     label: "Żurawie Przenośne"
@@ -174,6 +238,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/zurawie-przenosne_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "zurawie-samojezdne"
     label: "Żurawie Samojezdne"
@@ -206,6 +286,22 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/zurawie-samojezdne_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}
 
   - name: "bhp"
     label: "Szkolenie BHP"
@@ -238,3 +334,19 @@ collections:
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/bhp_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań specjalistycznych"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - label: "Zakresy ID (np. od 207 do 244)"
+                name: "ranges"
+                widget: "list"
+                fields:
+                  - {label: "Od ID", name: "min", widget: "number"}
+                  - {label: "Do ID", name: "max", widget: "number"}

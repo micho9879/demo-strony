@@ -92,29 +92,8 @@ const EXAM_N = 15;
 const EXAM_T = 30 * 60;
 const PASS_COUNT = 11;
 
-// ─── REGUŁY EGZAMINU (Przedziały ID pytań per kategoria) ──
-const EXAM_RULES = {
-  'wozki-podnosnikowe': [
-    { ranges: [[207, 244]], count: 5 }
-  ],
-  'wozki-specjalizowane': [
-    { ranges: [[217, 275]], count: 5 }
-  ],
-  'podesty': [
-    { ranges: [[179, 239]], count: 4 }
-  ],
-  'zurawie-przenosne': [
-    { ranges: [[210, 256]], count: 4 },
-    { ranges: [[257, 280], [292, 296], [305, 324]], count: 3 }
-  ],
-  'suwnice': [
-    { ranges: [[153, 220]], count: 3 }
-  ],
-  'zurawie-samojezdne': [
-    { ranges: [[222, 298]], count: 4 },
-    { ranges: [[299, 367]], count: 3 }
-  ]
-};
+// Zmienna przechowująca pobrane ustawienia egzaminu z CMS
+const EXAM_RULES = {};
 
 // ─── GENERATOR EGZAMINU ────────────────────────────
 function generateExam(allQs, cat) {
@@ -478,7 +457,8 @@ function clearAuthListener() {
 
 function startAuthListener(currentPassword) {
   clearAuthListener();
-  unsubAuth = onSnapshot(doc(db, "kursy-udt", "udt-haslo"), (snap) => {
+  const docId = S.group === 'bhp' ? 'bhp-haslo' : 'udt-haslo';
+  unsubAuth = onSnapshot(doc(db, "kursy-udt", docId), (snap) => {
     if (!snap.exists() || snap.data().haslo !== currentPassword) {
       clearAuthListener();
       delAuth(S.cat);
@@ -518,6 +498,15 @@ async function getQs(c) {
     });
   } catch(e) { S.opisy = []; }
 
+  try {
+    const rSet = await fetch(`data/${c}_ustawienia.json`, { cache: 'no-cache' });
+    const dSet = await rSet.json();
+    EXAM_RULES[c] = (dSet.rules || []).map(r => ({
+      count: r.count,
+      ranges: (r.ranges || []).map(rng => [rng.min, rng.max])
+    }));
+  } catch(e) { EXAM_RULES[c] = []; }
+
   return S.qs;
 }
 
@@ -545,8 +534,11 @@ function go(v) {
     topBk.style.display = '';
     topBk.onclick = () => {
       if (v === 'subcats') { S.group = null; go('home'); }
-      else if (v === 'login') { S.cat = null; go('subcats'); }
-      else if (v === 'menu') { S.cat = null; go('subcats'); }
+      else if (v === 'login' || v === 'menu') { 
+        S.cat = null; 
+        if (S.group === 'bhp') { S.group = null; go('home'); }
+        else go('subcats');
+      }
       else {
         if (v === 'exam') { clearInterval(S.eInt); S.eInt = null; }
         go('menu');
@@ -563,7 +555,8 @@ function go(v) {
       delAuth(S.cat);
       S.cat = null;
       history.replaceState(null, "", window.location.pathname);
-      go('subcats');
+      if (S.group === 'bhp') { S.group = null; go('home'); }
+      else go('subcats');
     };
   } else {
     topLo.style.display = 'none';
