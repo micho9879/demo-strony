@@ -163,8 +163,7 @@ const CATS = {
   'zurawie-przenosne': { label: 'Żurawie przenośne i przewoźne', desc: 'Obsługa żurawi HDS, przenośnych i przewoźnych', ic: 'crane_hds' },
   'zurawie-samojezdne': { label: 'Żurawie samojezdne', desc: 'Obsługa żurawi samojezdnych', ic: 'crane_mob' },
   'suwnice': { label: 'Suwnice', desc: 'Obsługa suwnic sterowanych z poziomu roboczego', ic: 'bridge' },
-  'bhp-biurowe': { label: 'Okresowe dla prac. admin-biurowych', desc: 'Szkolenie okresowe BHP dla pracowników biurowych', ic: 'file', locked: true },
-  'bhp-pracodawcy': { label: 'Okresowe dla pracodawców', desc: 'Szkolenie okresowe BHP dla pracodawców i kierowników', ic: 'users', locked: true },
+  'bhp': { label: 'Szkolenie BHP', desc: 'Bezpieczeństwo i Higiena Pracy', ic: 'helmet' },
 };
 
 // ─── GRUPY (Poziom 1 nawigacji) ─────────────────────────────
@@ -174,19 +173,13 @@ const GROUPS = {
     desc: 'TESTY UDT - Szkolenie operatorów urządzeń transportu bliskiego.',
     ic: 'udt_group',
     icons: ['wozki-podnosnikowe.svg', 'zurawie-przenosne.svg', 'podesty.svg', 'wozki-specjalizowane.svg', 'suwnice.svg'],
-    cats: ['wozki-podnosnikowe', 'wozki-specjalizowane', 'podesty', 'zurawie-przenosne', 'zurawie-samojezdne', 'suwnice'],
-  },
-  bhp: {
-    label: 'Szkolenia BHP',
-    desc: 'Bezpieczeństwo i Higiena Pracy',
-    ic: 'helmet',
-    cats: ['bhp-biurowe', 'bhp-pracodawcy'],
-  },
+    cats: ['wozki-podnosnikowe', 'wozki-specjalizowane', 'podesty', 'zurawie-przenosne', 'zurawie-samojezdne', 'suwnice', 'bhp'],
+  }
 };
 
 // ─── STAN ───────────────────────────────────────────────────
 const S = {
-  group: null, cat: null, qs: [], bhp: [], opisy: [],
+  group: null, cat: null, qs: [], opisy: [],
   bi: 0,
   ti: 0, tAns: false,
   eq: [], ei: 0, ea: [], et: EXAM_T, eInt: null,
@@ -510,15 +503,6 @@ async function getQs(c) {
   S.catTotals[c] = S.qs.length;
 
   try {
-    const rBhp = await fetch(`data/${c}_bhp.json`, { cache: 'no-cache' });
-    const dBhp = await rBhp.json();
-    S.bhp = dBhp.items || [];
-    S.bhp.forEach(q => {
-      if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
-    });
-  } catch(e) { S.bhp = []; }
-
-  try {
     const rOp = await fetch(`data/${c}_opisy.json`, { cache: 'no-cache' });
     const dOp = await rOp.json();
     S.opisy = dOp.items || [];
@@ -564,7 +548,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'result', 'clipboard', 'bhpList', 'opisyList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'result', 'clipboard', 'opisyList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -581,7 +565,7 @@ function go(v) {
   const m = {
     home: vHome, subcats: vSubcats, login: vLogin, menu: vMenu, resume: vResume,
     cheat: vCheat, train: vTrain, exam: vExam, result: vResult, clipboard: vClipboard,
-    bhpList: vBhpList, opisyList: vOpisyList
+    opisyList: vOpisyList
   };
   if (m[v]) m[v]();
   document.body.className = 'view-' + v;
@@ -813,9 +797,6 @@ function vMenu() {
       <button class="mbtn mbtn--hard" id="md"><div class="mbtn__ic mbtn__ic--y">${I.clip}</div>
         <div><div class="mbtn__t">Trudne pytania (Schowek)</div>
         <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań · pokaż instruktorowi</div></div></button>
-      <button class="mbtn" id="me"><div class="mbtn__ic mbtn__ic--y">${I.alrt}</div>
-        <div><div class="mbtn__t">Pytania BHP</div>
-        <div class="mbtn__d">${S.bhp ? S.bhp.length : 0} pytań z odpowiedziami</div></div></button>
       <button class="mbtn" id="mf"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
         <div><div class="mbtn__t">Opisy i Definicje</div>
         <div class="mbtn__d">${S.opisy ? S.opisy.length : 0} opisów w bazie</div></div></button>
@@ -829,7 +810,6 @@ function vMenu() {
   };
   $('mc').onclick = startExam;
   $('md').onclick = () => go('clipboard');
-  $('me').onclick = () => go('bhpList');
   $('mf').onclick = () => go('opisyList');
 }
 
@@ -1182,10 +1162,6 @@ function renderList(title, data, subtitle) {
   </div>`;
   bindImgs(appEl);
   $('clip-back').onclick = () => go('menu');
-}
-
-function vBhpList() {
-  renderList("Pytania BHP", S.bhp, CATS[S.cat].label);
 }
 
 function vOpisyList() {

@@ -26,18 +26,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/podesty_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/podesty_opisy.json"
@@ -70,18 +58,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/suwnice_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/suwnice_opisy.json"
@@ -114,18 +90,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/wozki-podnosnikowe_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/wozki-podnosnikowe_opisy.json"
@@ -158,18 +122,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/wozki-specjalizowane_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/wozki-specjalizowane_opisy.json"
@@ -202,18 +154,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/zurawie-przenosne_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/zurawie-przenosne_opisy.json"
@@ -246,18 +186,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Pytania BHP"
-        name: "bhp"
-        file: "data/zurawie-samojezdne_bhp.json"
-        fields:
-          - label: "Lista Pytań BHP"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Pytanie", name: "question", widget: "string"}
-              - {label: "Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
       - label: "Opisy"
         name: "opisy"
         file: "data/zurawie-samojezdne_opisy.json"
@@ -269,4 +197,36 @@ collections:
               - {label: "ID", name: "id", widget: "number", required: false}
               - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
               - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "string", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+
+  - name: "bhp"
+    label: "Szkolenie BHP"
+    files:
+      - label: "Pytania Egzaminacyjne"
+        name: "exam"
+        file: "data/bhp.json"
+        fields:
+          - label: "Pytania BHP"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Opisy"
+        name: "opisy"
+        file: "data/bhp_opisy.json"
+        fields:
+          - label: "Lista Opisów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
+              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
