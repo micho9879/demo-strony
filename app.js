@@ -1135,7 +1135,7 @@ function vSignature() {
   const dStr = d.toLocaleDateString('pl-PL') + ' ' + d.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
   const defName = S.studentLogin ? S.studentLogin.replace(/\./g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
 
-  appEl.innerHTML = \`<div>
+  appEl.innerHTML = `<div>
     <header class="hdr" style="padding-top:16px">
       <h1 style="font-size:1.5rem">Podsumowanie <span class="a">egzaminu</span></h1>
       <p>Wymagany podpis do zatwierdzenia wyniku</p>
@@ -1154,7 +1154,7 @@ function vSignature() {
         <button class="btn btn--a" id="sig-btn" style="min-width: 200px;">${I.chkC} <span>Zatwierdź Egzamin</span></button>
       </div>
     </div>
-  </div>\`.replace(/\\/g, ''); // Fix escaping
+  </div>`.replace(/\\/g, ''); // Fix escaping
 
   $('sig-btn').onclick = () => {
     const name = $('sig-name').value.trim();
