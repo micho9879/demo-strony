@@ -567,7 +567,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -585,7 +585,7 @@ function go(v) {
   const m = {
     home: vHome, subcats: vSubcats, login: vLogin, menu: vMenu, resume: vResume,
     cheat: vCheat, train: vTrain, exam: vExam, signature: vSignature, result: vResult, clipboard: vClipboard,
-    opisyList: vOpisyList
+    opisyList: vOpisyList, bhpList: vBhpList
   };
   if (m[v]) m[v]();
   document.body.className = 'view-' + v;
@@ -1292,6 +1292,38 @@ function renderList(title, data, subtitle) {
 function vOpisyList() {
   renderList("Opisy i Definicje", S.opisy, CATS[S.cat].label);
 }
+
+// ═════════════════════════════════════════════════════════════
+// WIDOK — Lista pytań (BHP)
+// ═════════════════════════════════════════════════════════════
+function vBhpList() {
+  const content = S.qs.map((q, idx) => {
+    return `
+    <div class="clip-card" id="clip-${idx}">
+      <div class="clip-card__top">
+        <div class="clip-card__q"><span class="clip-card__num">Pytanie ${idx + 1}</span>${q.question}</div>
+      </div>
+      ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
+      <div class="odp-lista">${q.options.map((o, i) => `
+        <div class="odp-btn odp-btn--lk ${i === q.correct ? 'odp-btn--ok' : ''}">
+          <span class="odp-btn__l">${LT[i]}</span><span class="odp-btn__t">${o}</span>
+        </div>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  appEl.innerHTML = `<div>
+    <header class="hdr"><h1 style="font-size:1.3rem">Baza pytań: ${CATS[S.cat].label}</h1>
+      <p>Pełna lista pytań na egzamin</p></header>
+    <div class="clip-list">${content}</div>
+    <div class="r-acts" style="margin-top:16px">
+      <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
+    </div>
+  </div>`.replace(/\\/g, '');
+
+  bindImgs(appEl);
+  $('clip-back').onclick = () => go('menu');
+}
+
 
 // ─── HELPER ─────────────────────────────────────────────────
 function bindImgs(el) {

@@ -1,1 +1,184 @@
-{"questions":[]}
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Przykładowe pytanie testowe BHP numer 1?",
+      "options": [
+        "Odpowiedź A dla pytania 1 (Błędna)",
+        "Odpowiedź B dla pytania 1 (Poprawna)",
+        "Odpowiedź C dla pytania 1 (Błędna)",
+        "Odpowiedź D dla pytania 1 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 2,
+      "question": "Przykładowe pytanie testowe BHP numer 2?",
+      "options": [
+        "Odpowiedź A dla pytania 2 (Błędna)",
+        "Odpowiedź B dla pytania 2 (Poprawna)",
+        "Odpowiedź C dla pytania 2 (Błędna)",
+        "Odpowiedź D dla pytania 2 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 3,
+      "question": "Przykładowe pytanie testowe BHP numer 3?",
+      "options": [
+        "Odpowiedź A dla pytania 3 (Błędna)",
+        "Odpowiedź B dla pytania 3 (Poprawna)",
+        "Odpowiedź C dla pytania 3 (Błędna)",
+        "Odpowiedź D dla pytania 3 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 4,
+      "question": "Przykładowe pytanie testowe BHP numer 4?",
+      "options": [
+        "Odpowiedź A dla pytania 4 (Błędna)",
+        "Odpowiedź B dla pytania 4 (Poprawna)",
+        "Odpowiedź C dla pytania 4 (Błędna)",
+        "Odpowiedź D dla pytania 4 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 5,
+      "question": "Przykładowe pytanie testowe BHP numer 5?",
+      "options": [
+        "Odpowiedź A dla pytania 5 (Błędna)",
+        "Odpowiedź B dla pytania 5 (Poprawna)",
+        "Odpowiedź C dla pytania 5 (Błędna)",
+        "Odpowiedź D dla pytania 5 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 6,
+      "question": "Przykładowe pytanie testowe BHP numer 6?",
+      "options": [
+        "Odpowiedź A dla pytania 6 (Błędna)",
+        "Odpowiedź B dla pytania 6 (Poprawna)",
+        "Odpowiedź C dla pytania 6 (Błędna)",
+        "Odpowiedź D dla pytania 6 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 7,
+      "question": "Przykładowe pytanie testowe BHP numer 7?",
+      "options": [
+        "Odpowiedź A dla pytania 7 (Błędna)",
+        "Odpowiedź B dla pytania 7 (Poprawna)",
+        "Odpowiedź C dla pytania 7 (Błędna)",
+        "Odpowiedź D dla pytania 7 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 8,
+      "question": "Przykładowe pytanie testowe BHP numer 8?",
+      "options": [
+        "Odpowiedź A dla pytania 8 (Błędna)",
+        "Odpowiedź B dla pytania 8 (Poprawna)",
+        "Odpowiedź C dla pytania 8 (Błędna)",
+        "Odpowiedź D dla pytania 8 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 9,
+      "question": "Przykładowe pytanie testowe BHP numer 9?",
+      "options": [
+        "Odpowiedź A dla pytania 9 (Błędna)",
+        "Odpowiedź B dla pytania 9 (Poprawna)",
+        "Odpowiedź C dla pytania 9 (Błędna)",
+        "Odpowiedź D dla pytania 9 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 10,
+      "question": "Przykładowe pytanie testowe BHP numer 10?",
+      "options": [
+        "Odpowiedź A dla pytania 10 (Błędna)",
+        "Odpowiedź B dla pytania 10 (Poprawna)",
+        "Odpowiedź C dla pytania 10 (Błędna)",
+        "Odpowiedź D dla pytania 10 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 11,
+      "question": "Przykładowe pytanie testowe BHP numer 11?",
+      "options": [
+        "Odpowiedź A dla pytania 11 (Błędna)",
+        "Odpowiedź B dla pytania 11 (Poprawna)",
+        "Odpowiedź C dla pytania 11 (Błędna)",
+        "Odpowiedź D dla pytania 11 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 12,
+      "question": "Przykładowe pytanie testowe BHP numer 12?",
+      "options": [
+        "Odpowiedź A dla pytania 12 (Błędna)",
+        "Odpowiedź B dla pytania 12 (Poprawna)",
+        "Odpowiedź C dla pytania 12 (Błędna)",
+        "Odpowiedź D dla pytania 12 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 13,
+      "question": "Przykładowe pytanie testowe BHP numer 13?",
+      "options": [
+        "Odpowiedź A dla pytania 13 (Błędna)",
+        "Odpowiedź B dla pytania 13 (Poprawna)",
+        "Odpowiedź C dla pytania 13 (Błędna)",
+        "Odpowiedź D dla pytania 13 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 14,
+      "question": "Przykładowe pytanie testowe BHP numer 14?",
+      "options": [
+        "Odpowiedź A dla pytania 14 (Błędna)",
+        "Odpowiedź B dla pytania 14 (Poprawna)",
+        "Odpowiedź C dla pytania 14 (Błędna)",
+        "Odpowiedź D dla pytania 14 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    },
+    {
+      "id": 15,
+      "question": "Przykładowe pytanie testowe BHP numer 15?",
+      "options": [
+        "Odpowiedź A dla pytania 15 (Błędna)",
+        "Odpowiedź B dla pytania 15 (Poprawna)",
+        "Odpowiedź C dla pytania 15 (Błędna)",
+        "Odpowiedź D dla pytania 15 (Błędna)"
+      ],
+      "correct": 1,
+      "image": ""
+    }
+  ]
+}
