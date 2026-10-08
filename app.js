@@ -4,7 +4,7 @@
    ============================================================ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, onSnapshot, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxts_hKjSLjPLDtGcYglzVMrIBUfKsch4",
@@ -131,10 +131,13 @@ const CATS = {
   'zurawie-przenosne': { label: 'Żurawie przenośne i przewoźne', desc: 'Obsługa żurawi HDS, przenośnych i przewoźnych', ic: 'crane_hds' },
   'zurawie-samojezdne': { label: 'Żurawie samojezdne', desc: 'Obsługa żurawi samojezdnych', ic: 'crane_mob' },
   'suwnice': { label: 'Suwnice', desc: 'Obsługa suwnic sterowanych z poziomu roboczego', ic: 'bridge' },
-  'bhp': { label: 'Szkolenie BHP', desc: 'Bezpieczeństwo i Higiena Pracy', ic: 'helmet' },
+  'bhp-1': { label: 'BHP Moduł 1', desc: 'Ogólne zasady BHP', ic: 'helmet' },
+  'bhp-2': { label: 'BHP Moduł 2', desc: 'Wypadki i pierwsza pomoc', ic: 'helmet' },
+  'bhp-3': { label: 'BHP Moduł 3', desc: 'Ochrona przeciwpożarowa', ic: 'helmet' },
+  'bhp-4': { label: 'BHP Moduł 4', desc: 'Czynniki szkodliwe na stanowisku', ic: 'helmet' }
 };
 
-// ─── GRUPY (Poziom 1 nawigacji) ─────────────────────────────
+// ─── GRUPY (Poziom 1 nawigacji) ────────────────────────────
 const GROUPS = {
   udt: {
     label: 'Szkolenia UDT',
@@ -147,7 +150,8 @@ const GROUPS = {
     label: 'Szkolenia BHP',
     desc: 'Bezpieczeństwo i Higiena Pracy',
     ic: 'helmet',
-    cats: ['bhp'],
+    icons: ['helmet.svg'],
+    cats: ['bhp-1', 'bhp-2', 'bhp-3', 'bhp-4'],
   }
 };
 
@@ -444,25 +448,48 @@ function clearAuthListener() {
   }
 }
 
-function startAuthListener(currentPassword) {
+function startAuthListener(authKey) {
   clearAuthListener();
-  const docId = S.group === 'bhp' ? 'bhp-haslo' : 'udt-haslo';
-  unsubAuth = onSnapshot(doc(db, "kursy-udt", docId), (snap) => {
-    if (!snap.exists() || snap.data().haslo !== currentPassword) {
-      clearAuthListener();
-      delAuth(S.cat);
-      if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
-      alert("Twoja sesja wygasła, ponieważ hasło dostępowe zostało zmienione.");
-      go('login');
-    }
-  });
+  if (S.group === 'bhp') {
+    // authKey = login::haslo
+    const [lVal, pVal] = authKey.split('::');
+    unsubAuth = onSnapshot(doc(db, "konta-bhp", lVal), (snap) => {
+      if (!snap.exists() || snap.data().haslo !== pVal || snap.data().kurs !== S.cat) {
+        clearAuthListener();
+        delAuth(S.cat);
+        if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
+        alert("Twoja sesja wygasła, ponieważ dostęp do kursu został cofnięty.");
+        go('login');
+      }
+    });
+  } else {
+    // UDT logowanie globalne
+    unsubAuth = onSnapshot(doc(db, "kursy-udt", 'udt-haslo'), (snap) => {
+      if (!snap.exists() || snap.data().haslo !== authKey) {
+        clearAuthListener();
+        delAuth(S.cat);
+        if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
+        alert("Twoja sesja wygasła, ponieważ hasło dostępowe zostało zmienione.");
+        go('login');
+      }
+    });
+  }
 }
 
-async function getDbPassword(grp) {
-  const docId = grp === 'bhp' ? 'bhp-haslo' : 'udt-haslo';
-  const dSnap = await getDoc(doc(db, "kursy-udt", docId));
-  if (dSnap.exists()) return dSnap.data().haslo;
-  return null;
+async function verifyAuth(grp, cat, login, pass) {
+  if (grp === 'bhp') {
+    const dSnap = await getDoc(doc(db, "konta-bhp", login));
+    if (dSnap.exists() && dSnap.data().haslo === pass && dSnap.data().kurs === cat) {
+      return true;
+    }
+    return false;
+  } else {
+    const dSnap = await getDoc(doc(db, "kursy-udt", 'udt-haslo'));
+    if (dSnap.exists() && dSnap.data().haslo === pass) {
+      return true;
+    }
+    return false;
+  }
 }
 
 async function getQs(c) {
@@ -540,7 +567,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'result', 'clipboard', 'opisyList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -557,7 +584,7 @@ function go(v) {
 
   const m = {
     home: vHome, subcats: vSubcats, login: vLogin, menu: vMenu, resume: vResume,
-    cheat: vCheat, train: vTrain, exam: vExam, result: vResult, clipboard: vClipboard,
+    cheat: vCheat, train: vTrain, exam: vExam, signature: vSignature, result: vResult, clipboard: vClipboard,
     opisyList: vOpisyList
   };
   if (m[v]) m[v]();
@@ -606,11 +633,7 @@ function vHome() {
       <span class="crd__arr">${I.chR}</span>`;
     d.onclick = () => { 
       S.group = k;
-      if (k === 'bhp') {
-        pickCat('bhp');
-      } else {
-        go('subcats'); 
-      }
+      go('subcats'); 
     };
     g.appendChild(d);
 
@@ -689,9 +712,21 @@ async function pickCat(k) {
 // ═════════════════════════════════════════════════════════════
 function vLogin() {
   const c = CATS[S.cat];
+  const isBhp = S.group === 'bhp';
+  
+  let loginHtml = '';
+  if (isBhp) {
+    loginHtml = `
+      <div class="fld"><label for="lgn">LOGIN</label>
+        <input type="text" id="lgn" placeholder="Wpisz swój login..." autocomplete="off"/>
+      </div>
+    `;
+  }
+
   appEl.innerHTML = `<div>
     <div class="lbox" style="margin-top:0">
-      <h2>${c.label}</h2><p>Wpisz hasło otrzymane od instruktora</p>
+      <h2>${c.label}</h2><p>${isBhp ? 'Zaloguj się na swoje konto' : 'Wpisz hasło otrzymane od instruktora'}</p>
+      ${loginHtml}
       <div class="fld"><label for="pw">HASŁO</label>
         <div class="pw-wrapper">
           <input type="password" id="pw" placeholder="••••••••" autocomplete="off"/>
@@ -706,6 +741,7 @@ function vLogin() {
     </div></div>`;
 
   const pw = $('pw'), er = $('er'), rem = $('rem'), btn = $('sub'), pwEye = $('pw-eye');
+  const lgn = $('lgn'); // Może być null dla UDT
 
   pwEye.onclick = () => {
     if (pw.type === 'password') {
@@ -719,8 +755,17 @@ function vLogin() {
 
   async function tryLog() {
     const v = pw.value.trim();
+    const lVal = lgn ? lgn.value.trim() : null;
+
     pw.classList.remove('has-error');
+    if (lgn) lgn.classList.remove('has-error');
     er.classList.remove('on');
+
+    if (isBhp && !lVal) {
+      lgn.classList.add('has-error');
+      sErr(er, 'Wpisz login');
+      return;
+    }
 
     if (!v) {
       pw.classList.add('has-error');
@@ -733,21 +778,23 @@ function vLogin() {
     btnSpan.textContent = 'Sprawdzanie...';
 
     try {
-      const dbPw = await getDbPassword(S.group);
-      if (dbPw === v) {
-        if (rem.checked) setAuth(S.cat, v);
-        startAuthListener(v);
-        history.pushState({ testActive: true }, "Testy UDT", "#test");
+      const authOk = await verifyAuth(S.group, S.cat, lVal, v);
+      if (authOk) {
+        const authKey = isBhp ? `${lVal}::${v}` : v;
+        if (rem.checked) setAuth(S.cat, authKey);
+        startAuthListener(authKey);
+        if (isBhp) S.studentLogin = lVal;
+        history.pushState({ testActive: true }, "Testy", "#test");
         await getQs(S.cat); go('menu');
       } else {
         pw.classList.add('has-error');
-        sErr(er, 'Nieprawidłowe hasło');
+        sErr(er, isBhp ? 'Nieprawidłowy login, hasło lub brak dostępu' : 'Nieprawidłowe hasło');
         pw.value = ''; pw.focus();
         btn.disabled = false;
         btnSpan.textContent = 'Zaloguj się';
       }
     } catch (e) {
-      sErr(er, 'Błąd połączenia z bazą haseł');
+      sErr(er, 'Błąd połączenia z bazą');
       btn.disabled = false;
       btnSpan.textContent = 'Zaloguj się';
     }
@@ -1017,7 +1064,7 @@ function startExam() {
   clearInterval(S.eInt);
   S.eInt = setInterval(() => {
     S.et--; updTmr();
-    if (S.et <= 0) { clearInterval(S.eInt); S.eInt = null; go('result'); }
+    if (S.et <= 0) { clearInterval(S.eInt); S.eInt = null; S.group === 'bhp' ? go('signature') : go('result'); }
   }, 1000);
   go('exam');
 }
@@ -1067,7 +1114,7 @@ function vExam() {
 
   $('enx').onclick = () => {
     if (S.ei < tot - 1) { S.ei++; go('exam'); }
-    else { clearInterval(S.eInt); S.eInt = null; go('result'); }
+    else { clearInterval(S.eInt); S.eInt = null; S.group === 'bhp' ? go('signature') : go('result'); }
   };
   updTmr();
 }
@@ -1082,6 +1129,48 @@ function updTmr() {
 }
 
 // ═════════════════════════════════════════════════════════════
+// WIDOK — Podpis egzaminu (tylko BHP)
+function vSignature() {
+  const d = new Date();
+  const dStr = d.toLocaleDateString('pl-PL') + ' ' + d.toLocaleTimeString('pl-PL', {hour: '2-digit', minute:'2-digit'});
+  const defName = S.studentLogin ? S.studentLogin.replace(/\./g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : '';
+
+  appEl.innerHTML = \`<div>
+    <header class="hdr" style="padding-top:16px">
+      <h1 style="font-size:1.5rem">Podsumowanie <span class="a">egzaminu</span></h1>
+      <p>Wymagany podpis do zatwierdzenia wyniku</p>
+    </header>
+    <div class="lbox" style="margin-top:24px">
+      <div class="fld">
+        <label>DATA I CZAS ZAKOŃCZENIA</label>
+        <input type="text" value="${dStr}" disabled style="background:#f5f5f5; color:#555; cursor:not-allowed;" />
+      </div>
+      <div class="fld" style="margin-top:16px;">
+        <label for="sig-name">TWÓJ PODPIS (Imię i Nazwisko)</label>
+        <input type="text" id="sig-name" placeholder="np. Jan Kowalski" value="${defName}" autocomplete="off"/>
+        <div class="fld-err" id="sig-er">${I.alrt}<span></span></div>
+      </div>
+      <div style="text-align: center; margin-top:24px;">
+        <button class="btn btn--a" id="sig-btn" style="min-width: 200px;">${I.chkC} <span>Zatwierdź Egzamin</span></button>
+      </div>
+    </div>
+  </div>\`.replace(/\\/g, ''); // Fix escaping
+
+  $('sig-btn').onclick = () => {
+    const name = $('sig-name').value.trim();
+    if (!name) {
+      $('sig-name').classList.add('has-error');
+      sErr($('sig-er'), 'Wpisz imię i nazwisko');
+      return;
+    }
+    S.studentSignature = name;
+    S.examDate = dStr;
+    S.examDateObj = d;
+    go('result');
+  };
+}
+
+// ═════════════════════════════════════════════════════════════
 // WIDOK — Wynik egzaminu
 // ═════════════════════════════════════════════════════════════
 function vResult() {
@@ -1093,6 +1182,24 @@ function vResult() {
     else mis.push({ q: q.question, img: q.image || '', u: a >= 0 ? q.options[a] : 'Brak odpowiedzi', c: q.options[q.correct] });
   });
   const pass = sc >= PASS_COUNT, pct = Math.round(sc / tot * 100);
+  const isBhp = S.group === 'bhp';
+
+  let actsHtml = '';
+  if (isBhp) {
+    if (pass) {
+      actsHtml = `
+        <button class="btn btn--a" id="r-pdf" style="background:var(--ok)">${I.doc || '📄'} Pobierz Certyfikat PDF</button>
+        <button class="btn btn--o" id="rh">${I.home} Menu</button>
+      `;
+    } else {
+      actsHtml = `<button class="btn btn--a" id="rr" style="width:100%">${I.rot} Spróbuj ponownie (Wymagane)</button>`;
+    }
+  } else {
+    actsHtml = `
+      <button class="btn btn--a" id="rr">${I.rot} Spróbuj ponownie</button>
+      <button class="btn btn--o" id="rh">${I.home} Menu</button>
+    `;
+  }
 
   appEl.innerHTML = `<div>
     <header class="hdr" style="padding-top:16px">
@@ -1104,7 +1211,8 @@ function vResult() {
       <div class="r-sc ${pass ? 'r-sc--p' : 'r-sc--f'}">${sc}/${tot}</div>
       <div class="r-sub">${pct}% poprawnych</div>
       <span class="r-badge ${pass ? 'r-badge--p' : 'r-badge--f'}">
-        ${pass ? '🎉 Zdałeś! Gratulacje!' : 'Nie zdałeś. Spróbuj ponownie.'}</span>
+        ${pass ? '👏 Zdałeś! Gratulacje!' : 'Nie zdałeś. Spróbuj ponownie.'}</span>
+      ${isBhp && pass ? `<div style="margin-top:12px; font-weight:600; color:#555;">Podpis: ${S.studentSignature}<br/>Data: ${S.examDate}</div>` : ''}
     </div>
     ${mis.length ? `<div class="rev"><h2>Przegląd błędów (${mis.length})</h2>
       ${mis.map(m => `<div class="ri"><div class="ri__q">${m.q}</div>
@@ -1112,25 +1220,43 @@ function vResult() {
         <div class="ri__r ri__r--b"><span class="dot dot--r"></span><span>Twoja: ${m.u}</span></div>
         <div class="ri__r ri__r--g"><span class="dot dot--g"></span><span>Poprawna: ${m.c}</span></div></div>`).join('')}
     </div>` : `<div class="rev" style="text-align:center;margin-top:24px">
-      <p style="color:var(--ok);font-weight:600">🎯 Bezbłędnie!</p></div>`}
+      <p style="color:var(--ok);font-weight:600">🏆 Bezłędnie!</p></div>`}
     <div class="r-acts">
-      <button class="btn btn--a" id="rr">${I.rot} Spróbuj ponownie</button>
-      <button class="btn btn--o" id="rh">${I.home} Menu</button>
+      ${actsHtml}
     </div></div>`;
 
-  $('rr').onclick = startExam;
-  $('rh').onclick = () => go('menu');
+  if ($('rr')) $('rr').onclick = startExam;
+  if ($('rh')) $('rh').onclick = () => go('menu');
+  if ($('r-pdf')) {
+    $('r-pdf').onclick = () => {
+      alert("Pobieranie PDF... (funkcja będzie dodana w następnym kroku)");
+    };
+  }
 
-  // Podpięcie lightbox do obrazków w przeglądzie błędów
-  appEl.querySelectorAll('.ri__img').forEach(img => {
-    img.style.cursor = 'zoom-in';
-    img.onclick = () => olb(img.src);
-  });
+  if (isBhp && pass && !S.savedResult) {
+    S.savedResult = true;
+    saveBhpResult(S.studentLogin, S.studentSignature, S.examDateObj, sc, tot, pct);
+  }
 }
 
-// ═════════════════════════════════════════════════════════════
-// WIDOK — Listy (BHP / Opisy)
-// ═════════════════════════════════════════════════════════════
+async function saveBhpResult(login, signature, dateObj, sc, tot, pct) {
+  try {
+    await addDoc(collection(db, "wyniki-bhp"), {
+      login: login || 'nieznany',
+      podpis: signature || '',
+      kurs: CATS[S.cat].label,
+      kurs_id: S.cat,
+      wynik: `${sc}/${tot}`,
+      procent: pct,
+      data_egzaminu: dateObj,
+      data_utworzenia: serverTimestamp()
+    });
+    console.log("Zapisano wynik do bazy!");
+  } catch(e) {
+    console.error("Błąd zapisu:", e);
+  }
+}
+
 function renderList(title, data, subtitle) {
   let content = (!data || data.length === 0) ? `<div class="clip-empty">
       <div class="clip-empty__ic">${I.file}</div>

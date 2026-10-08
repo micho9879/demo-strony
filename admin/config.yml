@@ -279,12 +279,12 @@ collections:
               - {label: "Od ID", name: "min", widget: "number"}
               - {label: "Do ID", name: "max", widget: "number"}
 
-  - name: "bhp"
-    label: "Szkolenie BHP"
+    - name: "bhp-1"
+    label: "BHP Moduł 1"
     files:
       - label: "Pytania Egzaminacyjne"
         name: "exam"
-        file: "data/bhp.json"
+        file: "data/bhp-1.json"
         fields:
           - label: "Pytania BHP"
             name: "questions"
@@ -300,7 +300,7 @@ collections:
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
       - label: "Opisy"
         name: "opisy"
-        file: "data/bhp_opisy.json"
+        file: "data/bhp-1_opisy.json"
         fields:
           - label: "Lista Opisów"
             name: "items"
@@ -312,7 +312,139 @@ collections:
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
-        file: "data/bhp_ustawienia.json"
+        file: "data/bhp-1_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań na egzamin"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
+
+  - name: "bhp-2"
+    label: "BHP Moduł 2"
+    files:
+      - label: "Pytania Egzaminacyjne"
+        name: "exam"
+        file: "data/bhp-2.json"
+        fields:
+          - label: "Pytania BHP"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Opisy"
+        name: "opisy"
+        file: "data/bhp-2_opisy.json"
+        fields:
+          - label: "Lista Opisów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
+              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/bhp-2_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań na egzamin"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
+
+  - name: "bhp-3"
+    label: "BHP Moduł 3"
+    files:
+      - label: "Pytania Egzaminacyjne"
+        name: "exam"
+        file: "data/bhp-3.json"
+        fields:
+          - label: "Pytania BHP"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Opisy"
+        name: "opisy"
+        file: "data/bhp-3_opisy.json"
+        fields:
+          - label: "Lista Opisów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
+              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/bhp-3_ustawienia.json"
+        fields:
+          - label: "Reguły losowania pytań na egzamin"
+            name: "rules"
+            widget: "list"
+            required: false
+            fields:
+              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
+              - {label: "Od ID", name: "min", widget: "number"}
+              - {label: "Do ID", name: "max", widget: "number"}
+
+  - name: "bhp-4"
+    label: "BHP Moduł 4"
+    files:
+      - label: "Pytania Egzaminacyjne"
+        name: "exam"
+        file: "data/bhp-4.json"
+        fields:
+          - label: "Pytania BHP"
+            name: "questions"
+            widget: "list"
+            fields:
+              - {label: "ID pytania", name: "id", widget: "number"}
+              - {label: "Treść pytania", name: "question", widget: "string"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - label: "Opcje odpowiedzi"
+                name: "options"
+                widget: "list"
+                field: {label: "Opcja", name: "option", widget: "string"}
+              - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Opisy"
+        name: "opisy"
+        file: "data/bhp-4_opisy.json"
+        fields:
+          - label: "Lista Opisów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
+              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Ustawienia Egzaminu"
+        name: "ustawienia"
+        file: "data/bhp-4_ustawienia.json"
         fields:
           - label: "Reguły losowania pytań na egzamin"
             name: "rules"
