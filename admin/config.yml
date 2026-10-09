@@ -279,7 +279,7 @@ collections:
               - {label: "Od ID", name: "min", widget: "number"}
               - {label: "Do ID", name: "max", widget: "number"}
 
-    - name: "bhp-1"
+  - name: "bhp-1"
     label: "BHP Moduł 1"
     files:
       - label: "Pytania Egzaminacyjne"
