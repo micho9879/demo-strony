@@ -298,18 +298,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
-        name: "opisy"
-        file: "data/bhp-1_opisy.json"
-        fields:
-          - label: "Lista Opisów"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-1_ustawienia.json"
@@ -342,18 +330,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
-        name: "opisy"
-        file: "data/bhp-2_opisy.json"
-        fields:
-          - label: "Lista Opisów"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-2_ustawienia.json"
@@ -386,18 +362,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
-        name: "opisy"
-        file: "data/bhp-3_opisy.json"
-        fields:
-          - label: "Lista Opisów"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-3_ustawienia.json"
@@ -430,18 +394,6 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
-        name: "opisy"
-        file: "data/bhp-4_opisy.json"
-        fields:
-          - label: "Lista Opisów"
-            name: "items"
-            widget: "list"
-            fields:
-              - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
-              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-4_ustawienia.json"
