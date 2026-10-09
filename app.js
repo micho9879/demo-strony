@@ -1301,24 +1301,25 @@ function vBhpList() {
     return `
     <div class="clip-card" id="clip-${idx}">
       <div class="clip-card__top">
-        <div class="clip-card__q"><span class="clip-card__num">Pytanie ${idx + 1}</span>${q.question}</div>
+        <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
       </div>
       ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
-      <div class="odp-lista">${q.options.map((o, i) => `
-        <div class="odp-btn odp-btn--lk ${i === q.correct ? 'odp-btn--ok' : ''}">
-          <span class="odp-btn__l">${LT[i]}</span><span class="odp-btn__t">${o}</span>
-        </div>`).join('')}</div>
+      <div class="odp-lista">
+        <div class="odp-btn odp-btn--lk odp-btn--ok" style="cursor:default; align-items:flex-start">
+          <span class="odp-btn__t" style="white-space:pre-wrap; text-align:left">${q.options[q.correct]}</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
 
   appEl.innerHTML = `<div>
     <header class="hdr"><h1 style="font-size:1.3rem">Baza pytań: ${CATS[S.cat].label}</h1>
-      <p>Pełna lista pytań na egzamin</p></header>
+      <p>Pełna lista pytań i odpowiedzi</p></header>
     <div class="clip-list">${content}</div>
     <div class="r-acts" style="margin-top:16px">
       <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
     </div>
-  </div>`.replace(/\\/g, '');
+  </div>`;
 
   bindImgs(appEl);
   $('clip-back').onclick = () => go('menu');
