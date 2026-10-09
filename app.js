@@ -1287,15 +1287,31 @@ function vResult() {
     if (isBhp && pass && !S.savedResult) {
       S.savedResult = true;
       saveBhpResult(S.studentLogin, S.studentSignature, S.examDateObj, sc, tot, pct);
-      sendBhpToTelegram(S.studentLogin, S.studentSignature, sc, tot, pct, S.examDateStr);
+      sendBhpToTelegram(S.studentLogin, S.studentSignature, sc, tot, pct, S.examDate);
     }
   }
 
   async function sendBhpToTelegram(login, signature, sc, tot, pct, dateStr) {
     try {
       const certEl = document.createElement('div');
+      
+      const qListHtml = S.eq.map((q, i) => {
+        const aIdx = S.ea[i];
+        const isCorr = aIdx === q.correct;
+        const ansText = aIdx >= 0 ? q.options[aIdx] : 'Brak odpowiedzi';
+        const corrText = q.options[q.correct];
+        
+        return `
+          <div style="margin-bottom: 25px; padding: 15px; border-radius: 6px; border-left: 5px solid ${isCorr ? '#27ae60' : '#e74c3c'}; background: #fdfdfd; border-top: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+            <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">${i + 1}. ${q.question}</div>
+            <div style="font-size: 14px; margin-bottom: 4px;">Odpowiedź uczestnika: <span style="color: ${isCorr ? '#27ae60' : '#e74c3c'}; font-weight: bold;">${ansText}</span></div>
+            ${!isCorr ? `<div style="font-size: 14px; color: #555;">Poprawna odpowiedź: <strong>${corrText}</strong></div>` : ''}
+          </div>
+        `;
+      }).join('');
+
       certEl.innerHTML = `
-        <div style="padding: 40px; font-family: sans-serif; color: #000; background: #fff; border: 2px solid #ccc; width: 800px; box-sizing: border-box;">
+        <div style="padding: 40px; font-family: sans-serif; color: #000; background: #fff; width: 800px; box-sizing: border-box;">
           <h1 style="text-align: center; color: #2c3e50; font-size: 32px; text-transform: uppercase;">ZAŚWIADCZENIE UKOŃCZENIA TESTU</h1>
           <h2 style="text-align: center; color: #7f8c8d; font-size: 20px; margin-bottom: 40px;">${CATS[S.cat].label}</h2>
           <hr style="margin: 20px 0; border: 1px solid #eee;">
@@ -1316,14 +1332,19 @@ function vResult() {
             <p>Wygenerowano elektronicznie przez system testowy</p>
           </div>
         </div>
+        
+        <div style="page-break-before: always; padding: 40px; font-family: sans-serif; color: #000; background: #fff; width: 800px; box-sizing: border-box;">
+          <h2 style="font-size: 24px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">Raport szczegółowy egzaminu</h2>
+          ${qListHtml}
+        </div>
       `;
       
       const opt = {
-        margin:       10,
-        filename:     `Certyfikat_${CATS[S.cat].label}_${login || 'wynik'}.pdf`.replace(/ /g, '_'),
+        margin:       0,
+        filename:     `Raport_${CATS[S.cat].label}_${login || 'wynik'}.pdf`.replace(/ /g, '_'),
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
       const BOT_TOKEN = "8975055071:AAHYX24xUKnWDtM87WxwNjXX9Gc_B91WU8g";
@@ -1333,7 +1354,7 @@ function vResult() {
       
       const formData = new FormData();
       formData.append('chat_id', CHAT_ID);
-      formData.append('caption', `✅ Uczeń **${signature}** (${login}) zdał egzamin z **${CATS[S.cat].label}**!\n\nWynik: ${sc}/${tot} (${pct}%)`);
+      formData.append('caption', `✅ Uczeń **${signature}** (${login}) zdał egzamin z **${CATS[S.cat].label}**!\n\nWynik: ${sc}/${tot} (${pct}%)\n\nW załączniku certyfikat oraz pełny wykaz pytań z odpowiedziami.`);
       formData.append('document', pdfBlob, opt.filename);
       
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, {
