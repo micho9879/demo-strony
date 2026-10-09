@@ -695,11 +695,24 @@ async function pickCat(k) {
   const sv = getAuth(k);
   if (sv) {
     try {
-      const dbPw = await getDbPassword(S.group);
-      if (dbPw && dbPw === sv) {
-        startAuthListener(dbPw);
-        history.pushState({ testActive: true }, "Testy UDT", "#test");
-        await getQs(k); go('menu'); return;
+      if (S.group === 'bhp') {
+        const [lgn, pw] = sv.split('::');
+        if (lgn && pw) {
+          const authOk = await verifyAuth(S.group, k, lgn, pw);
+          if (authOk) {
+            startAuthListener(sv);
+            S.studentLogin = lgn;
+            history.pushState({ testActive: true }, "Testy", "#test");
+            await getQs(k); go('menu'); return;
+          }
+        }
+      } else {
+        const authOk = await verifyAuth(S.group, k, null, sv);
+        if (authOk) {
+          startAuthListener(sv);
+          history.pushState({ testActive: true }, "Testy", "#test");
+          await getQs(k); go('menu'); return;
+        }
       }
     } catch (e) { /* brak połączenia */ }
     delAuth(k);
