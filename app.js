@@ -823,6 +823,44 @@ function sErr(el, m) { el.querySelector('span').textContent = m; el.classList.ad
 // ═════════════════════════════════════════════════════════════
 function vMenu() {
   const c = CATS[S.cat];
+  const isBhp = S.group === 'bhp';
+
+  if (isBhp) {
+    appEl.innerHTML = `<div>
+      <div class="stats-box">
+        <div class="stats-box__title">Wybrany moduł: ${c.label}</div>
+        <div class="stats-box__row">
+          <span class="stats-box__label">Baza wiedzy</span>
+          <span class="stats-box__val">${S.qs.length} pytań</span>
+        </div>
+      </div>
+
+      <header class="hdr" style="padding-top:4px">
+        <h1 style="font-size:1.5rem">Wybierz <span class="a">tryb</span></h1>
+      </header>
+      <div class="modes">
+        <button class="mbtn" id="m-bhplist">
+          <div class="mbtn__ic mbtn__ic--b">${I.file}</div>
+          <div>
+            <div class="mbtn__t">Baza pytań (Lista)</div>
+            <div class="mbtn__d">Przeglądaj wszystkie pytania z zaznaczonymi odpowiedziami</div>
+          </div>
+        </button>
+        <button class="mbtn" id="m-e">
+          <div class="mbtn__ic mbtn__ic--r">${I.fChk}</div>
+          <div>
+            <div class="mbtn__t">Egzamin (Losowe)</div>
+            <div class="mbtn__d">Rozwiąż test i uzyskaj podpisany certyfikat</div>
+          </div>
+        </button>
+      </div>
+    </div>`;
+
+    $('m-bhplist').onclick = () => go('bhpList');
+    $('m-e').onclick = startExam;
+    return;
+  }
+
   const n = Math.min(EXAM_N, S.qs.length);
   const passInfo = `${PASS_COUNT}/${n}`;
   const done = getDoneCount(S.cat);
@@ -852,10 +890,10 @@ function vMenu() {
         <div class="mbtn__d">Ucz się — natychmiastowy feedback, zapamiętywanie postępu</div></div></button>
       <button class="mbtn" id="mc"><div class="mbtn__ic mbtn__ic--r">${I.fChk}</div>
         <div><div class="mbtn__t">Egzamin (Losowe)</div>
-        <div class="mbtn__d">${n} pytań · 30 min · próg: ${passInfo}</div></div></button>
+        <div class="mbtn__d">${n} pytań • 30 min • próg: ${passInfo}</div></div></button>
       <button class="mbtn mbtn--hard" id="md"><div class="mbtn__ic mbtn__ic--y">${I.clip}</div>
         <div><div class="mbtn__t">Trudne pytania (Schowek)</div>
-        <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań · pokaż instruktorowi</div></div></button>
+        <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań • pokaż instruktorowi</div></div></button>
       <button class="mbtn" id="mf"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
         <div><div class="mbtn__t">Opisy i Definicje</div>
         <div class="mbtn__d">${S.opisy ? S.opisy.length : 0} opisów w bazie</div></div></button>
@@ -869,8 +907,10 @@ function vMenu() {
   };
   $('mc').onclick = startExam;
   $('md').onclick = () => go('clipboard');
+  if (!S.opisy || S.opisy.length === 0) $('mf').style.display = 'none';
   $('mf').onclick = () => go('opisyList');
 }
+
 
 // ═════════════════════════════════════════════════════════════
 // WIDOK 3b — Dialog kontynuacji
