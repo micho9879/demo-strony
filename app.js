@@ -1241,6 +1241,9 @@ function vResult() {
 
 async function saveBhpResult(login, signature, dateObj, sc, tot, pct) {
   try {
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 30);
+
     await addDoc(collection(db, "wyniki-bhp"), {
       login: login || 'nieznany',
       podpis: signature || '',
@@ -1249,7 +1252,8 @@ async function saveBhpResult(login, signature, dateObj, sc, tot, pct) {
       wynik: `${sc}/${tot}`,
       procent: pct,
       data_egzaminu: dateObj,
-      data_utworzenia: serverTimestamp()
+      data_utworzenia: serverTimestamp(),
+      wygasa: expireDate
     });
     console.log("Zapisano wynik do bazy!");
   } catch(e) {
