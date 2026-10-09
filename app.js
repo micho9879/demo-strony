@@ -1281,12 +1281,56 @@ function vResult() {
   if ($('rr')) $('rr').onclick = startExam;
   if ($('rh')) $('rh').onclick = () => go('menu');
   if ($('r-pdf')) {
-    $('r-pdf').onclick = () => {
-      alert("Pobieranie PDF... (funkcja będzie dodana w następnym kroku)");
-    };
-  }
+      $('r-pdf').onclick = () => {
+        const btn = $('r-pdf');
+        btn.disabled = true;
+        const orgText = btn.textContent;
+        btn.textContent = "Generowanie PDF...";
+        
+        const certEl = document.createElement('div');
+        certEl.innerHTML = `
+          <div style="padding: 40px; font-family: sans-serif; color: #000; background: #fff; border: 2px solid #ccc; width: 800px; box-sizing: border-box;">
+            <h1 style="text-align: center; color: #2c3e50; font-size: 32px; text-transform: uppercase;">ZAŚWIADCZENIE UKOŃCZENIA TESTU</h1>
+            <h2 style="text-align: center; color: #7f8c8d; font-size: 20px; margin-bottom: 40px;">${CATS[S.cat].label}</h2>
+            <hr style="margin: 20px 0; border: 1px solid #eee;">
+            <p style="font-size: 18px; line-height: 1.6;">
+              Zaświadcza się, że uczestnik:<br>
+              <strong style="font-size: 24px;">${S.studentSignature || 'Nie podano'}</strong> <br>
+              <span style="color: #666; font-size: 14px;">(login: ${S.studentLogin})</span>
+            </p>
+            <p style="font-size: 18px; line-height: 1.6; margin-top: 30px;">
+              W dniu <strong>${S.examDateStr}</strong> ukończył(a) egzamin końcowy z wynikiem pozytywnym.
+            </p>
+            <div style="margin-top: 40px; text-align: center; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+              <p style="font-size: 20px; margin: 0;">
+                Wynik: <strong style="color: #27ae60;">${sc} / ${tot} (${pct}%)</strong>
+              </p>
+            </div>
+            <div style="margin-top: 80px; text-align: right; font-size: 14px; color: #888;">
+              <p>Wygenerowano elektronicznie przez system testowy</p>
+            </div>
+          </div>
+        `;
+        
+        const opt = {
+          margin:       10,
+          filename:     `Certyfikat_${CATS[S.cat].label}_${S.studentLogin || 'wynik'}.pdf`.replace(/ /g, '_'),
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2 },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        
+        html2pdf().set(opt).from(certEl).save().then(() => {
+          btn.textContent = "PDF pobrany!";
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = orgText;
+          }, 3000);
+        });
+      };
+    }
 
-  if (isBhp && pass && !S.savedResult) {
+    if (isBhp && pass && !S.savedResult) {
     S.savedResult = true;
     saveBhpResult(S.studentLogin, S.studentSignature, S.examDateObj, sc, tot, pct);
   }
