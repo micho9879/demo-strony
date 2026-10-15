@@ -6,8 +6,114 @@
     <title>Sveltia CMS</title>
     <!-- Link to config.yml -->
     <link href="config.yml" type="application/yaml" rel="cms-config-url" />
+    <style>
+      #cms-jump {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        background: #1A1D27;
+        border: 1px solid rgba(245, 184, 79, .45);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+        font: 600 13px system-ui, -apple-system, sans-serif;
+        color: #fff;
+      }
+      #cms-jump input {
+        width: 70px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, .15);
+        background: #101218;
+        color: #fff;
+        font: inherit;
+        outline: none;
+      }
+      #cms-jump input:focus { border-color: #F5B84F; }
+      #cms-jump button {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 8px;
+        background: #F5B84F;
+        color: #101218;
+        font: inherit;
+        cursor: pointer;
+      }
+      #cms-jump .msg { color: #f87171; font-weight: 500; }
+      .cms-jump-hit {
+        outline: 3px solid #F5B84F !important;
+        outline-offset: 2px;
+        border-radius: 6px;
+        transition: outline-color 1.5s;
+      }
+    </style>
   </head>
   <body>
     <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+
+    <!-- Szybki skok do pytania w edytorze listy -->
+    <div id="cms-jump" title="Wpisz numer pytania i wciśnij Enter">
+      <span>Idź do pytania:</span>
+      <input type="number" id="cms-jump-inp" min="1" placeholder="Nr" />
+      <button type="button" id="cms-jump-btn">Idź</button>
+      <span class="msg" id="cms-jump-msg"></span>
+    </div>
+    <script>
+      (function () {
+        var box = document.getElementById('cms-jump');
+        var inp = document.getElementById('cms-jump-inp');
+        var msg = document.getElementById('cms-jump-msg');
+        var SUM = /^#(\d*) \|/;
+
+        // Najgłębsze elementy, których tekst zaczyna się od "#<id> |" (nagłówki pozycji listy)
+        function headers() {
+          var out = [];
+          var all = document.body.querySelectorAll('*');
+          for (var i = 0; i < all.length; i++) {
+            var el = all[i];
+            if (box.contains(el)) continue;
+            var t = (el.textContent || '').trim();
+            if (!SUM.test(t)) continue;
+            var deeper = false;
+            for (var c = 0; c < el.children.length; c++) {
+              if (SUM.test((el.children[c].textContent || '').trim())) { deeper = true; break; }
+            }
+            if (!deeper) out.push(el);
+          }
+          return out;
+        }
+
+        function jump() {
+          msg.textContent = '';
+          var n = parseInt(inp.value, 10);
+          if (isNaN(n) || n < 1) return;
+          var list = headers();
+          if (!list.length) { msg.textContent = 'Otwórz listę pytań'; return; }
+          var target = null;
+          // 1) po ID pytania
+          for (var i = 0; i < list.length; i++) {
+            var m = (list[i].textContent || '').trim().match(SUM);
+            if (m && m[1] !== '' && parseInt(m[1], 10) === n) { target = list[i]; break; }
+          }
+          // 2) po kolejności na liście
+          if (!target) target = list[Math.min(n, list.length) - 1];
+          var row = target.parentElement || target;
+          target.style.scrollMarginTop = '90px';
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          row.classList.add('cms-jump-hit');
+          setTimeout(function () { row.classList.remove('cms-jump-hit'); }, 2000);
+        }
+
+        inp.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); jump(); }
+        });
+        inp.addEventListener('focus', function () { inp.select(); });
+        document.getElementById('cms-jump-btn').addEventListener('click', jump);
+      })();
+    </script>
   </body>
 </html>

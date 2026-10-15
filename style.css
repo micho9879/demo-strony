@@ -1659,6 +1659,9 @@ body::after {
     position: relative !important;
     padding: 24px 32px 64px !important;
     overflow: visible !important;
+    /* Bez warstwy GPU — ostry tekst przy skalowaniu Windows 125%/150% */
+    transform: none !important;
+    will-change: auto !important;
   }
 
   #app>div {
@@ -1842,13 +1845,17 @@ body::after {
     max-width: 1000px;
   }
 
-  body.view-home .grid {
+  html body.view-home .grid {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    max-width: 480px !important;
+    max-width: 360px !important;
     margin: 28px auto 0 !important;
     gap: 16px !important;
+  }
+
+  html body.view-home .grid .crd {
+    max-width: 360px !important;
   }
 
   body.view-subcats .grid {

@@ -1472,46 +1472,74 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
     }
   }, { passive: false });
 
-  // Kliknięcie w pigułkę numeru
-  const pills = scrollContainer.querySelectorAll('.q-pill');
-  pills.forEach(btn => {
+  // Który element faktycznie się przewija: na telefonie #app>div, na PC całe okno
+  const useEl = parentScrollEl &&
+    getComputedStyle(parentScrollEl).overflowY !== 'visible' &&
+    parentScrollEl.scrollHeight > parentScrollEl.clientHeight + 1;
+  const scroller = useEl ? parentScrollEl : window;
+  const getTop = () => useEl ? parentScrollEl.scrollTop : window.scrollY;
+  const viewTop = () => useEl ? parentScrollEl.getBoundingClientRect().top : 0;
+  const bar = document.getElementById('q-nav-bar');
+  const barBottom = () => bar ? bar.getBoundingClientRect().bottom : viewTop();
+
+  const pills = Array.from(scrollContainer.querySelectorAll('.q-pill'));
+  const cards = pills.map(p => document.getElementById(prefix + p.dataset.idx));
+
+  // Wyśrodkowanie pigułki tylko w poziomie (nie rusza pionowego scrolla strony)
+  function centerPill(pill, smooth) {
+    const left = pill.offsetLeft - (scrollContainer.clientWidth - pill.offsetWidth) / 2;
+    scrollContainer.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
+  }
+
+  let current = -1;
+  function setActive(i, smooth = true) {
+    if (i === current || !pills[i]) return;
+    if (pills[current]) pills[current].classList.remove('active');
+    pills[i].classList.add('active');
+    current = i;
+    centerPill(pills[i], smooth);
+  }
+  pills.forEach(p => p.classList.remove('active'));
+  setActive(0, false);
+
+  // Blokada podświetlania w trakcie skoku po kliknięciu
+  let lockUntil = 0;
+
+  pills.forEach((btn, i) => {
     btn.onclick = () => {
-      const idx = btn.dataset.idx;
-      const target = document.getElementById(prefix + idx);
-      if (target) {
-        pills.forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        btn.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      const target = cards[i];
+      if (!target) return;
+      setActive(i);
+      lockUntil = Date.now() + 900;
+      const offset = target.getBoundingClientRect().top - barBottom() - 12;
+      scroller.scrollTo({ top: getTop() + offset, behavior: 'smooth' });
     };
   });
 
-  // Automatyczne podświetlanie widocznego pytania podczas scrollowania
-  if (window.IntersectionObserver) {
-    const isPc = window.innerWidth >= 640;
-    const cards = document.querySelectorAll(`[id^="${prefix}"]`);
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.id;
-          const idx = id.replace(prefix, '');
-          const pill = scrollContainer.querySelector(`.q-pill[data-idx="${idx}"]`);
-          if (pill) {
-            pills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            pill.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
-          }
-        }
-      });
-    }, {
-      root: isPc ? null : parentScrollEl,
-      rootMargin: isPc ? '-120px 0px -70% 0px' : '-65px 0px -70% 0px',
-      threshold: 0
+  // Podświetlanie aktualnie widocznego pytania podczas scrollowania
+  let ticking = false;
+  function onScroll() {
+    if (!scrollContainer.isConnected) {
+      scroller.removeEventListener('scroll', onScroll);
+      return;
+    }
+    if (ticking || Date.now() < lockUntil) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      const line = barBottom() + 24;
+      let idx = 0;
+      for (let i = 0; i < cards.length; i++) {
+        if (cards[i] && cards[i].getBoundingClientRect().top <= line) idx = i;
+        else break;
+      }
+      setActive(idx);
     });
-
-    cards.forEach(card => observer.observe(card));
   }
+
+  if (window._qNavScrollCleanup) window._qNavScrollCleanup();
+  scroller.addEventListener('scroll', onScroll, { passive: true });
+  window._qNavScrollCleanup = () => scroller.removeEventListener('scroll', onScroll);
 }
 
 function renderList(title, data, subtitle) {
