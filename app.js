@@ -567,7 +567,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList', 'questionsList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -856,7 +856,7 @@ function vMenu() {
       </div>
     </div>`;
 
-    $('m-bhplist').onclick = () => go('bhpList');
+    $('m-bhplist').onclick = () => go('questionsList');
     $('m-e').onclick = startExam;
     return;
   }
@@ -882,9 +882,12 @@ function vMenu() {
     <header class="hdr" style="padding-top:4px">
       <h1 style="font-size:1.5rem">Wybierz <span class="a">tryb</span></h1></header>
     <div class="modes">
+      <button class="mbtn" id="m-udtlist"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
+        <div><div class="mbtn__t">Baza pytań (Lista)</div>
+        <div class="mbtn__d">Wszystkie ${total} pytań na jednej liście z zaznaczonymi odpowiedziami</div></div></button>
       <button class="mbtn" id="ma"><div class="mbtn__ic mbtn__ic--b">${I.book}</div>
-        <div><div class="mbtn__t">Baza pytań (Ściąga)</div>
-        <div class="mbtn__d">Przeglądaj pytania z zaznaczoną poprawną odpowiedzią</div></div></button>
+        <div><div class="mbtn__t">Baza pytań (Karty)</div>
+        <div class="mbtn__d">Przeglądaj pytania pojedynczo z zaznaczoną poprawną odpowiedzią</div></div></button>
       <button class="mbtn" id="mb"><div class="mbtn__ic mbtn__ic--g">${I.brain}</div>
         <div><div class="mbtn__t">Trening (Krok po kroku)</div>
         <div class="mbtn__d">Ucz się — natychmiastowy feedback, zapamiętywanie postępu</div></div></button>
@@ -896,9 +899,10 @@ function vMenu() {
         <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań • pokaż instruktorowi</div></div></button>
       <button class="mbtn" id="mf"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
         <div><div class="mbtn__t">Opisy i Definicje</div>
-        <div class="mbtn__d">${S.opisy ? S.opisy.length : 0} opisów w bazie</div></div></button>
+        <div class="mbtn__d">${S.opisy && S.opisy.length ? S.opisy.length + ' opisów w bazie' : 'Baza opisów i schematów (z CMS)'}</div></div></button>
     </div></div>`;
 
+  $('m-udtlist').onclick = () => go('questionsList');
   $('ma').onclick = () => { S.bi = 0; go('cheat'); };
   $('mb').onclick = () => {
     const sv = getSaved(S.cat);
@@ -907,10 +911,8 @@ function vMenu() {
   };
   $('mc').onclick = startExam;
   $('md').onclick = () => go('clipboard');
-  if (!S.opisy || S.opisy.length === 0) $('mf').style.display = 'none';
   $('mf').onclick = () => go('opisyList');
 }
-
 
 // ═════════════════════════════════════════════════════════════
 // WIDOK 3b — Dialog kontynuacji
@@ -1428,16 +1430,84 @@ function vResult() {
   }
 }
 
+function renderQuickNav(count, prefix = 'clip-') {
+  if (count <= 1) return '';
+  let pills = '';
+  for (let i = 0; i < count; i++) {
+    pills += `<button type="button" class="q-pill ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Skocz do ${i + 1}">${i + 1}</button>`;
+  }
+  return `
+    <div class="q-nav-bar" id="q-nav-bar">
+      <div class="q-nav-scroll" id="q-nav-scroll">
+        ${pills}
+      </div>
+    </div>
+  `;
+}
+
+function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
+  if (!scrollContainer) return;
+
+  // Przewijanie poziome kółkiem myszy na PC
+  scrollContainer.addEventListener('wheel', (e) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      scrollContainer.scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+
+  // Kliknięcie w pigułkę numeru
+  const pills = scrollContainer.querySelectorAll('.q-pill');
+  pills.forEach(btn => {
+    btn.onclick = () => {
+      const idx = btn.dataset.idx;
+      const target = document.getElementById(prefix + idx);
+      if (target) {
+        pills.forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+  });
+
+  // Automatyczne podświetlanie widocznego pytania podczas scrollowania
+  if (window.IntersectionObserver) {
+    const isPc = window.innerWidth >= 640;
+    const cards = document.querySelectorAll(`[id^="${prefix}"]`);
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          const idx = id.replace(prefix, '');
+          const pill = scrollContainer.querySelector(`.q-pill[data-idx="${idx}"]`);
+          if (pill) {
+            pills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            pill.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      });
+    }, {
+      root: isPc ? null : parentScrollEl,
+      rootMargin: isPc ? '-120px 0px -70% 0px' : '-65px 0px -70% 0px',
+      threshold: 0
+    });
+
+    cards.forEach(card => observer.observe(card));
+  }
+}
+
 function renderList(title, data, subtitle) {
   let content = (!data || data.length === 0) ? `<div class="clip-empty">
       <div class="clip-empty__ic">${I.file}</div>
       <h2>Brak wpisów</h2>
-      <p>Dodaj wpisy w panelu CMS, aby się tu pojawiły.</p>
+      <p>W tej kategorii nie ma jeszcze wprowadzonych opisów.<br/>Dodaj wpisy w panelu CMS (<strong>/admin</strong>), aby się tu pojawiły.</p>
     </div>` :
     data.map((q, idx) => `
-      <div class="clip-card">
+      <div class="clip-card" id="clip-${idx}" data-idx="${idx}">
         <div class="clip-card__top">
-          <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
+          <div class="clip-card__q"><span class="clip-card__num">Wpis ${idx + 1}</span> ${q.question}</div>
         </div>
         ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
         <div class="odp-lista">
@@ -1448,15 +1518,22 @@ function renderList(title, data, subtitle) {
       </div>
     `).join('');
 
+  const quickNavHtml = (data && data.length > 1) ? renderQuickNav(data.length, 'clip-') : '';
+
   appEl.innerHTML = `<div>
     <header class="hdr"><h1 style="font-size:1.3rem">${title}</h1>
       <p>${subtitle}</p></header>
+    ${quickNavHtml}
     <div class="clip-list">${content}</div>
     <div class="r-acts" style="margin-top:16px">
       <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
     </div>
   </div>`;
+
   bindImgs(appEl);
+  if (data && data.length > 1) {
+    bindQuickNav($('q-nav-scroll'), appEl.firstElementChild, 'clip-');
+  }
   $('clip-back').onclick = () => go('menu');
 }
 
@@ -1465,14 +1542,17 @@ function vOpisyList() {
 }
 
 // ═════════════════════════════════════════════════════════════
-// WIDOK — Lista pytań (BHP)
+// WIDOK — Pełna lista pytań z odpowiedziami (BHP & UDT)
 // ═════════════════════════════════════════════════════════════
-function vBhpList() {
-  const content = S.qs.map((q, idx) => {
-    return `
-    <div class="clip-card" id="clip-${idx}">
+function vQuestionsList() {
+  const isBhp = S.group === 'bhp';
+  const title = `Baza pytań: ${CATS[S.cat].label}`;
+  const subtitle = `Pełna lista pytań (${S.qs.length}) z zaznaczonymi odpowiedziami`;
+
+  const content = S.qs.map((q, idx) => `
+    <div class="clip-card" id="clip-${idx}" data-idx="${idx}">
       <div class="clip-card__top">
-        <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
+        <div class="clip-card__q"><span class="clip-card__num">Pytanie ${idx + 1}</span> ${q.question}</div>
       </div>
       ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
       <div class="odp-lista">
@@ -1480,12 +1560,13 @@ function vBhpList() {
           <span class="odp-btn__t" style="white-space:pre-wrap; text-align:left">${q.options[q.correct]}</span>
         </div>
       </div>
-    </div>`;
-  }).join('');
+    </div>
+  `).join('');
 
   appEl.innerHTML = `<div>
-    <header class="hdr"><h1 style="font-size:1.3rem">Baza pytań: ${CATS[S.cat].label}</h1>
-      <p>Pełna lista pytań i odpowiedzi</p></header>
+    <header class="hdr"><h1 style="font-size:1.3rem">${title}</h1>
+      <p>${subtitle}</p></header>
+    ${renderQuickNav(S.qs.length, 'clip-')}
     <div class="clip-list">${content}</div>
     <div class="r-acts" style="margin-top:16px">
       <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
@@ -1493,9 +1574,11 @@ function vBhpList() {
   </div>`;
 
   bindImgs(appEl);
+  bindQuickNav($('q-nav-scroll'), appEl.firstElementChild, 'clip-');
   $('clip-back').onclick = () => go('menu');
 }
 
+const vBhpList = vQuestionsList;
 
 // ─── HELPER ─────────────────────────────────────────────────
 function bindImgs(el) {

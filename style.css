@@ -1820,7 +1820,15 @@ body::after {
     max-width: 1000px;
   }
 
-  body.view-home .grid,
+  body.view-home .grid {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    max-width: 480px !important;
+    margin: 28px auto 0 !important;
+    gap: 16px !important;
+  }
+
   body.view-subcats .grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
@@ -1837,5 +1845,107 @@ body::after {
   body.view-menu #app>div {
     zoom: 1.2;
     justify-content: center;
+  }
+}
+
+/* ═══════ Układ ekranu głównego (BHP pod UDT) ═══════ */
+body.view-home .grid {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  max-width: 480px !important;
+  margin: 24px auto 0 !important;
+  gap: 16px !important;
+}
+
+body.view-home .grid .crd {
+  width: 100% !important;
+  max-width: 480px !important;
+}
+
+/* ═══════ Pasek szybkiego skoku (Horizontal Quick Jump Nav) ═══════ */
+.q-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  background: var(--bg);
+  padding: 8px 12px 10px;
+  margin: 0 -16px 14px;
+  border-bottom: 1px solid var(--brd-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color .3s var(--ease), border-color .3s var(--ease);
+}
+
+.q-nav-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+  padding: 2px 4px 6px;
+}
+
+.q-nav-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+.q-nav-scroll::-webkit-scrollbar-track {
+  background: rgba(128, 128, 128, 0.08);
+  border-radius: 4px;
+}
+.q-nav-scroll::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+.q-pill {
+  flex-shrink: 0;
+  min-width: 40px;
+  height: 34px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--brd);
+  background: var(--card);
+  color: var(--txt);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  user-select: none;
+}
+
+.q-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.q-pill.active {
+  background: var(--accent) !important;
+  color: #111 !important;
+  border-color: var(--accent) !important;
+  font-weight: 700;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.clip-card {
+  scroll-margin-top: 65px;
+}
+
+@media (min-width: 640px) {
+  .q-nav-bar {
+    top: 54px; /* poniżej sticky .top-nav na PC */
+    margin: 0 0 18px;
+    border-radius: var(--r);
+    border: 1px solid var(--brd-subtle);
+  }
+
+  .clip-card {
+    scroll-margin-top: 125px;
   }
 }
