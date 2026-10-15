@@ -30,6 +30,7 @@ const IC_FILES = {
 };
 
 const GITHUB_RAW = 'https://raw.githubusercontent.com/bhpcomplexwloszczowa/zdjecia-udt/main';
+const LS_SVG_CACHE = 'udt_svg_v2';
 
 async function loadSvg(el, name) {
   if (I[name]) { el.innerHTML = I[name]; return; }
@@ -41,6 +42,12 @@ async function loadSvg(el, name) {
       .replace(/<svg([^>]*)>/i, '<svg$1 fill="currentColor">');
     I[name] = svg;
     if (el) el.innerHTML = svg;
+    // Zapisz do localStorage
+    try {
+      const c = JSON.parse(localStorage.getItem(LS_SVG_CACHE) || '{}');
+      c[name] = svg;
+      localStorage.setItem(LS_SVG_CACHE, JSON.stringify(c));
+    } catch(e) {}
   } catch (e) { }
 }
 
@@ -81,6 +88,12 @@ const I = {
   file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`,
   users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
 };
+
+// Odtwórz zapisane ikony SVG z localStorage
+try {
+  const _sc = JSON.parse(localStorage.getItem(LS_SVG_CACHE) || '{}');
+  for (const k in _sc) if (_sc[k]) I[k] = _sc[k];
+} catch(e) {}
 
 // ─── STAŁE ──────────────────────────────────────────────────
 const LT = 'ABCD';
@@ -754,7 +767,17 @@ async function pickCat(k) {
           return;
         }
       }
-    } catch (e) { /* brak połączenia */ }
+    } catch (e) {
+      // Brak połączenia — NIE kasuj hasła, wpuść na podstawie zapisanego auth
+      await getQs(k);
+      if (S.group === 'bhp') {
+        const [lgn] = sv.split('::');
+        S.studentLogin = lgn;
+      }
+      history.pushState({ testActive: true }, "Testy", "#test");
+      go('menu');
+      return;
+    }
     delAuth(k);
   }
   go('login');
@@ -1703,13 +1726,9 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-// ─── PWA (Demontaż - Czysta Strona Web) ────────────────────────
+// ─── SERVICE WORKER (Cachowanie zasobów) ────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function (registrations) {
-    for (let registration of registrations) {
-      registration.unregister();
-    }
-  }).catch(() => { });
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
 // ─── POLITYKA PRYWATNOŚCI (Zamykanie Modala) ───────────────────
