@@ -113,6 +113,7 @@ body {
   color: var(--txt);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition: background-color .3s var(--ease), color .3s var(--ease);
 }
 
@@ -687,6 +688,12 @@ body::after {
 
 .btn:active {
   transform: scale(.97);
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .btn--a {
@@ -1879,7 +1886,6 @@ body::after {
   body.view-home #app>div,
   body.view-subcats #app>div,
   body.view-menu #app>div {
-    zoom: 1.2;
     justify-content: center;
   }
 }
@@ -2056,11 +2062,13 @@ body {
 }
 
 #app>div {
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
   touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .top-nav {
@@ -2099,7 +2107,8 @@ body {
 }
 
 .r-acts,
-.btns {
+.btns,
+.exam-nav-btns {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2113,7 +2122,37 @@ body {
   text-align: center;
 }
 
+.exam-nav-btns {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.exam-nav-btns .btn {
+  flex-shrink: 0;
+}
+
 .q-nav-scroll {
   touch-action: pan-x !important;
 }
+}
+
+/* ═══════ Paski przewijania (Firefox) ═══════ */
+html,
+body,
+#app>div,
+.pyt-kontener,
+.pol-modal__content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 184, 79, .35) transparent;
+}
+
+[data-theme="light"] html,
+[data-theme="light"] body,
+[data-theme="light"] #app>div,
+[data-theme="light"] .pyt-kontener,
+[data-theme="light"] .pol-modal__content {
+  scrollbar-color: rgba(0, 0, 0, .2) transparent;
 }

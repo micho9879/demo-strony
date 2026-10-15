@@ -48,7 +48,7 @@ const I = {
   exc: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="8" height="6" rx="1"/><path d="M8 17h6"/><path d="M5 14V8a1 1 0 0 1 1-1h2l3 3h4a1 1 0 0 1 1 1v3"/><path d="M15 7l-3-3"/></svg>`,
   chR: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`,
   chL: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`,
-  aL: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
+  aL: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
   aR: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
   key: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.3 9.3"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>`,
   alrt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
@@ -586,7 +586,10 @@ function go(v) {
         else go('subcats');
       }
       else {
-        if (v === 'exam') { clearInterval(S.eInt); S.eInt = null; }
+        if (v === 'exam') {
+          if (!confirm("Czy na pewno chcesz przerwać egzamin i wrócić do menu?")) return;
+          clearInterval(S.eInt); S.eInt = null;
+        }
         go('menu');
       }
     };
@@ -1176,8 +1179,8 @@ function vExam() {
         <button class="odp-btn ${i === sel ? 'odp-btn--sel' : ''}" data-i="${i}" id="eo${i}">
           <span class="odp-btn__l">${LT[i]}</span><span class="odp-btn__t">${o}</span>
         </button>`).join('')}</div>
-      <div style="margin-top:16px;display:flex;justify-content:space-between">
-        <button class="btn btn--o" id="eprv" ${S.ei === 0 ? 'style="visibility:hidden"' : ''}>
+      <div class="exam-nav-btns" style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <button class="btn btn--o btn--s" id="eprv" ${S.ei === 0 ? 'disabled' : ''}>
           ${I.aL} Wstecz</button>
         <button class="btn btn--a btn--s" id="enx">
           ${S.ei < tot - 1 ? 'Następne' : 'Zakończ egzamin'} ${I.aR}</button>
@@ -1511,13 +1514,14 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
     }
   }, { passive: false });
 
-  // Który element faktycznie się przewija: na telefonie #app>div, na PC całe okno
-  const useEl = parentScrollEl &&
-    getComputedStyle(parentScrollEl).overflowY !== 'visible' &&
-    parentScrollEl.scrollHeight > parentScrollEl.clientHeight + 1;
-  const scroller = useEl ? parentScrollEl : window;
-  const getTop = () => useEl ? parentScrollEl.scrollTop : window.scrollY;
-  const viewTop = () => useEl ? parentScrollEl.getBoundingClientRect().top : 0;
+  // Który element faktycznie się przewija: na telefonie #app>div, na PC okno
+  const isElScroller = () => {
+    if (!parentScrollEl) return false;
+    const oy = getComputedStyle(parentScrollEl).overflowY;
+    return oy === 'auto' || oy === 'scroll';
+  };
+  const getTop = () => isElScroller() ? parentScrollEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+  const viewTop = () => isElScroller() ? parentScrollEl.getBoundingClientRect().top : 0;
   const bar = document.getElementById('q-nav-bar');
   const barBottom = () => bar ? bar.getBoundingClientRect().bottom : viewTop();
 
@@ -1551,7 +1555,13 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
       setActive(i);
       lockUntil = Date.now() + 900;
       const offset = target.getBoundingClientRect().top - barBottom() - 12;
-      scroller.scrollTo({ top: getTop() + offset, behavior: 'smooth' });
+      const targetTop = getTop() + offset;
+      if (isElScroller()) {
+        parentScrollEl.scrollTo({ top: targetTop, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        document.documentElement.scrollTo({ top: targetTop, behavior: 'smooth' });
+      }
     };
   });
 
@@ -1559,7 +1569,8 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
   let ticking = false;
   function onScroll() {
     if (!scrollContainer.isConnected) {
-      scroller.removeEventListener('scroll', onScroll);
+      if (parentScrollEl) parentScrollEl.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
       return;
     }
     if (ticking || Date.now() < lockUntil) return;
@@ -1577,8 +1588,12 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
   }
 
   if (window._qNavScrollCleanup) window._qNavScrollCleanup();
-  scroller.addEventListener('scroll', onScroll, { passive: true });
-  window._qNavScrollCleanup = () => scroller.removeEventListener('scroll', onScroll);
+  if (parentScrollEl) parentScrollEl.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window._qNavScrollCleanup = () => {
+    if (parentScrollEl) parentScrollEl.removeEventListener('scroll', onScroll);
+    window.removeEventListener('scroll', onScroll);
+  };
 }
 
 function renderList(title, data, subtitle) {
