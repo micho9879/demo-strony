@@ -397,7 +397,17 @@ function getAuth(c) {
   } catch { localStorage.removeItem(LS_AUTH); return c ? '' : {}; }
 }
 function setAuth(c, p) { const a = getAuth(); a[c] = p; localStorage.setItem(LS_AUTH, JSON.stringify(a)); }
-function delAuth(c) { if (c) { const a = getAuth(); delete a[c]; localStorage.setItem(LS_AUTH, JSON.stringify(a)); } else { localStorage.removeItem(LS_AUTH); } }
+function delAuth(c) {
+  if (c) {
+    const a = getAuth();
+    delete a[c];
+    localStorage.setItem(LS_AUTH, JSON.stringify(a));
+    delete SESSION_AUTH_OK[c];
+  } else {
+    localStorage.removeItem(LS_AUTH);
+    for (const k in SESSION_AUTH_OK) delete SESSION_AUTH_OK[k];
+  }
+}
 
 function getSaved(c) { return parseInt(localStorage.getItem('udt_last_' + c)) || 0; }
 function setSaved(c, i) { localStorage.setItem('udt_last_' + c, String(i)); }
@@ -491,40 +501,57 @@ async function verifyAuth(grp, cat, login, pass) {
   }
 }
 
+const Q_CACHE = {};
+const SESSION_AUTH_OK = {};
+
 async function getQs(c) {
-  const r = await fetch(`data/${c}.json`, { cache: 'no-cache' });
-  const data = await r.json();
-  S.qs = Array.isArray(data) ? data : (data.questions || []);
-  
-  // Normalizacja indeksu: JSON używa 1-4 (ludzki), JS potrzebuje 0-3 (tablicowy)
-  S.qs.forEach(q => {
-    const v = parseInt(q.correct);
-    if (v >= 1) q.correct = v - 1;
-    if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
-  });
-  S.catTotals[c] = S.qs.length;
-
-  try {
-    const rOp = await fetch(`data/${c}_opisy.json`, { cache: 'no-cache' });
-    const dOp = await rOp.json();
-    S.opisy = dOp.items || [];
-    S.opisy.forEach(q => {
-      if (q.image && q.image.startsWith('/img/')) q.image = q.image.substring(1);
-    });
-  } catch(e) { S.opisy = []; }
-
-  try {
-    const rSet = await fetch(`data/${c}_ustawienia.json`, { cache: 'no-cache' });
-    const dSet = await rSet.json();
-    EXAM_RULES[c] = {
-      rules: (dSet.rules || []).map(r => ({
-        count: r.count,
-        ranges: [[r.min, r.max]]
-      }))
-    };
-  } catch(e) { 
-    EXAM_RULES[c] = { rules: [] }; 
+  if (Q_CACHE[c]) {
+    S.qs = Q_CACHE[c].qs;
+    S.opisy = Q_CACHE[c].opisy;
+    EXAM_RULES[c] = Q_CACHE[c].rules;
+    S.catTotals[c] = S.qs.length;
+    return S.qs;
   }
+
+  // Równoległe pobieranie 3 plików naraz (Promise.allSettled) zamiast sekwencyjnego
+  const [qRes, opRes, setRes] = await Promise.allSettled([
+    fetch(`data/${c}.json`).then(r => r.ok ? r.json() : []),
+    fetch(`data/${c}_opisy.json`).then(r => r.ok ? r.json() : { items: [] }),
+    fetch(`data/${c}_ustawienia.json`).then(r => r.ok ? r.json() : { rules: [] })
+  ]);
+
+  const data = qRes.status === 'fulfilled' ? qRes.value : [];
+  const dOp = opRes.status === 'fulfilled' ? opRes.value : { items: [] };
+  const dSet = setRes.status === 'fulfilled' ? setRes.value : { rules: [] };
+
+  const rawQs = Array.isArray(data) ? data : (data.questions || []);
+  const qs = rawQs.map(q => {
+    const item = { ...q };
+    const v = parseInt(item.correct, 10);
+    if (v >= 1) item.correct = v - 1;
+    if (item.image && item.image.startsWith('/img/')) item.image = item.image.substring(1);
+    return item;
+  });
+
+  const rawOp = dOp.items || [];
+  const opisy = rawOp.map(q => {
+    const item = { ...q };
+    if (item.image && item.image.startsWith('/img/')) item.image = item.image.substring(1);
+    return item;
+  });
+
+  const rules = {
+    rules: (dSet.rules || []).map(r => ({
+      count: r.count,
+      ranges: [[r.min, r.max]]
+    }))
+  };
+
+  Q_CACHE[c] = { qs, opisy, rules };
+  S.qs = qs;
+  S.opisy = opisy;
+  EXAM_RULES[c] = rules;
+  S.catTotals[c] = qs.length;
 
   return S.qs;
 }
@@ -678,7 +705,12 @@ function vSubcats() {
       <span class="crd__arr">${I.chR}</span>`;
     d.onclick = () => {
       if (c.locked) { alert('Moduł w przygotowaniu — wkrótce dostępne'); return; }
+      d.classList.add('crd--loading');
       pickCat(k);
+    };
+    d.onmouseenter = () => {
+      // Prefetch danych kursu w tle przy najechaniu myszką
+      getQs(k);
     };
     g.appendChild(d);
     if (IC_FILES[c.ic]) {
@@ -697,20 +729,26 @@ async function pickCat(k) {
       if (S.group === 'bhp') {
         const [lgn, pw] = sv.split('::');
         if (lgn && pw) {
-          const authOk = await verifyAuth(S.group, k, lgn, pw);
+          const authPromise = SESSION_AUTH_OK[k] ? Promise.resolve(true) : verifyAuth(S.group, k, lgn, pw);
+          const [authOk] = await Promise.all([authPromise, getQs(k)]);
           if (authOk) {
+            SESSION_AUTH_OK[k] = true;
             startAuthListener(sv);
             S.studentLogin = lgn;
             history.pushState({ testActive: true }, "Testy", "#test");
-            await getQs(k); go('menu'); return;
+            go('menu');
+            return;
           }
         }
       } else {
-        const authOk = await verifyAuth(S.group, k, null, sv);
+        const authPromise = SESSION_AUTH_OK[k] ? Promise.resolve(true) : verifyAuth(S.group, k, null, sv);
+        const [authOk] = await Promise.all([authPromise, getQs(k)]);
         if (authOk) {
+          SESSION_AUTH_OK[k] = true;
           startAuthListener(sv);
           history.pushState({ testActive: true }, "Testy", "#test");
-          await getQs(k); go('menu'); return;
+          go('menu');
+          return;
         }
       }
     } catch (e) { /* brak połączenia */ }
@@ -792,6 +830,7 @@ function vLogin() {
     try {
       const authOk = await verifyAuth(S.group, S.cat, lVal, v);
       if (authOk) {
+        SESSION_AUTH_OK[S.cat] = true;
         const authKey = isBhp ? `${lVal}::${v}` : v;
         if (rem.checked) setAuth(S.cat, authKey);
         startAuthListener(authKey);
