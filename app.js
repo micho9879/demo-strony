@@ -1442,6 +1442,10 @@ function renderQuickNav(count, prefix = 'clip-') {
       <button type="button" class="q-nav-arrow q-nav-arrow--right" id="q-nav-next" aria-label="Przewiń w prawo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
+      <div class="q-nav-jump" title="Wpisz numer pytania i wciśnij Enter">
+        <span class="q-nav-jump-lbl">Idź do:</span>
+        <input type="number" class="q-nav-input" id="q-nav-input" min="1" max="${count}" placeholder="Nr" />
+      </div>
     </div>
   `;
 }
@@ -1487,6 +1491,45 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
     };
   });
 
+  // Obsługa bezpośredniego wpisania numeru pytania (Idź do)
+  const jumpInp = document.getElementById('q-nav-input');
+  if (jumpInp) {
+    const totalItems = pills.length;
+
+    function doJump() {
+      let val = parseInt(jumpInp.value, 10);
+      if (isNaN(val)) return;
+      val = Math.max(1, Math.min(val, totalItems));
+      const idx = val - 1;
+      const target = document.getElementById(prefix + idx);
+      if (target) {
+        pills.forEach(p => p.classList.remove('active'));
+        const pill = scrollContainer.querySelector(`.q-pill[data-idx="${idx}"]`);
+        if (pill) {
+          pill.classList.add('active');
+          pill.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+        }
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    jumpInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doJump();
+        jumpInp.blur();
+      }
+    });
+
+    jumpInp.addEventListener('change', () => {
+      doJump();
+    });
+
+    jumpInp.addEventListener('focus', () => {
+      jumpInp.select();
+    });
+  }
+
   // Automatyczne podświetlanie widocznego pytania podczas scrollowania
   if (window.IntersectionObserver) {
     const isPc = window.innerWidth >= 640;
@@ -1501,6 +1544,9 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
             pills.forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
             pill.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+            if (jumpInp && document.activeElement !== jumpInp) {
+              jumpInp.placeholder = String(parseInt(idx, 10) + 1);
+            }
           }
         }
       });

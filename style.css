@@ -1966,6 +1966,62 @@ body.view-home .grid .crd {
   height: 0 !important;
 }
 
+.q-nav-jump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-left: 8px;
+  border-left: 1px solid var(--brd-subtle);
+}
+
+.q-nav-jump-lbl {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--txt2);
+  white-space: nowrap;
+}
+
+.q-nav-input {
+  width: 54px;
+  height: 34px;
+  padding: 0 4px;
+  text-align: center;
+  background: var(--inp);
+  border: 1px solid var(--brd);
+  border-radius: 8px;
+  color: var(--txt);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font);
+  outline: none;
+  transition: all 0.2s var(--ease);
+  -moz-appearance: textfield;
+}
+
+.q-nav-input::-webkit-outer-spin-button,
+.q-nav-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.q-nav-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  background: var(--card);
+}
+
+@media (max-width: 480px) {
+  .q-nav-jump-lbl {
+    display: none;
+  }
+  .q-nav-input {
+    width: 44px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+}
+
 .q-pill {
   flex-shrink: 0;
   min-width: 42px;
