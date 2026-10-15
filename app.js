@@ -567,7 +567,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList', 'questionsList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -856,7 +856,7 @@ function vMenu() {
       </div>
     </div>`;
 
-    $('m-bhplist').onclick = () => go('questionsList');
+    $('m-bhplist').onclick = () => go('bhpList');
     $('m-e').onclick = startExam;
     return;
   }
@@ -882,12 +882,9 @@ function vMenu() {
     <header class="hdr" style="padding-top:4px">
       <h1 style="font-size:1.5rem">Wybierz <span class="a">tryb</span></h1></header>
     <div class="modes">
-      <button class="mbtn" id="m-udtlist"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
-        <div><div class="mbtn__t">Baza pytań (Lista)</div>
-        <div class="mbtn__d">Wszystkie ${total} pytań na jednej liście z zaznaczonymi odpowiedziami</div></div></button>
       <button class="mbtn" id="ma"><div class="mbtn__ic mbtn__ic--b">${I.book}</div>
-        <div><div class="mbtn__t">Baza pytań (Karty)</div>
-        <div class="mbtn__d">Przeglądaj pytania pojedynczo z zaznaczoną poprawną odpowiedzią</div></div></button>
+        <div><div class="mbtn__t">Baza pytań (Ściąga)</div>
+        <div class="mbtn__d">Przeglądaj pytania z zaznaczoną poprawną odpowiedzią</div></div></button>
       <button class="mbtn" id="mb"><div class="mbtn__ic mbtn__ic--g">${I.brain}</div>
         <div><div class="mbtn__t">Trening (Krok po kroku)</div>
         <div class="mbtn__d">Ucz się — natychmiastowy feedback, zapamiętywanie postępu</div></div></button>
@@ -902,7 +899,6 @@ function vMenu() {
         <div class="mbtn__d">${S.opisy && S.opisy.length ? S.opisy.length + ' opisów w bazie' : 'Baza opisów i schematów (z CMS)'}</div></div></button>
     </div></div>`;
 
-  $('m-udtlist').onclick = () => go('questionsList');
   $('ma').onclick = () => { S.bi = 0; go('cheat'); };
   $('mb').onclick = () => {
     const sv = getSaved(S.cat);
@@ -1542,17 +1538,13 @@ function vOpisyList() {
 }
 
 // ═════════════════════════════════════════════════════════════
-// WIDOK — Pełna lista pytań z odpowiedziami (BHP & UDT)
+// WIDOK — Lista pytań (BHP)
 // ═════════════════════════════════════════════════════════════
-function vQuestionsList() {
-  const isBhp = S.group === 'bhp';
-  const title = `Baza pytań: ${CATS[S.cat].label}`;
-  const subtitle = `Pełna lista pytań (${S.qs.length}) z zaznaczonymi odpowiedziami`;
-
+function vBhpList() {
   const content = S.qs.map((q, idx) => `
     <div class="clip-card" id="clip-${idx}" data-idx="${idx}">
       <div class="clip-card__top">
-        <div class="clip-card__q"><span class="clip-card__num">Pytanie ${idx + 1}</span> ${q.question}</div>
+        <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
       </div>
       ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
       <div class="odp-lista">
@@ -1564,8 +1556,8 @@ function vQuestionsList() {
   `).join('');
 
   appEl.innerHTML = `<div>
-    <header class="hdr"><h1 style="font-size:1.3rem">${title}</h1>
-      <p>${subtitle}</p></header>
+    <header class="hdr"><h1 style="font-size:1.3rem">Baza pytań: ${CATS[S.cat].label}</h1>
+      <p>Pełna lista pytań i odpowiedzi</p></header>
     ${renderQuickNav(S.qs.length, 'clip-')}
     <div class="clip-list">${content}</div>
     <div class="r-acts" style="margin-top:16px">
@@ -1577,8 +1569,6 @@ function vQuestionsList() {
   bindQuickNav($('q-nav-scroll'), appEl.firstElementChild, 'clip-');
   $('clip-back').onclick = () => go('menu');
 }
-
-const vBhpList = vQuestionsList;
 
 // ─── HELPER ─────────────────────────────────────────────────
 function bindImgs(el) {
