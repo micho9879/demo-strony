@@ -181,13 +181,7 @@ body::after {
   flex-direction: column;
   flex: 1;
   height: 100%;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
 }
 
 /* ── Animacja wejścia ── */
@@ -1839,13 +1833,13 @@ body::after {
   border-color: rgba(0, 0, 0, .12);
 }
 
-/* ═══════ WIDOK KOMPUTEROWY (BEZ SZTUCZNEGO ZOOMU) ═══════ */
+/* ═══════ WIDOK KOMPUTEROWY (ZOOM & MULTI-COLUMN) ═══════ */
 @media (min-width: 1024px) {
 
   body.view-home #app,
   body.view-subcats #app,
   body.view-menu #app {
-    max-width: 720px;
+    max-width: 1000px;
   }
 
   body.view-home .grid {
@@ -1859,19 +1853,20 @@ body::after {
 
   body.view-subcats .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
 
   body.view-menu .modes {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 20px;
   }
 
   body.view-home #app>div,
   body.view-subcats #app>div,
   body.view-menu #app>div {
-    justify-content: flex-start;
+    zoom: 1.2;
+    justify-content: center;
   }
 }
 
@@ -2031,21 +2026,27 @@ body.view-home .grid .crd {
   }
 }
 
-/* ═══════ BLOKADA PRZESUWANIA STRONY NA BOKI (Mobile Anti-Horizontal Scroll) ═══════ */
+/* ═══════ BLOKADA PRZESUWANIA STRONY NA BOKI (tylko telefony) ═══════ */
+@media (max-width: 639px) {
 html,
 body {
   overflow-x: hidden !important;
   max-width: 100% !important;
   width: 100% !important;
-  position: relative;
 }
 
 #app {
   overflow-x: hidden !important;
-  max-width: 720px !important;
-  width: 100% !important;
-  margin: 0 auto !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
+}
+
+#app>div {
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  touch-action: pan-y !important;
 }
 
 .top-nav {
@@ -2100,4 +2101,5 @@ body {
 
 .q-nav-scroll {
   touch-action: pan-x !important;
+}
 }
