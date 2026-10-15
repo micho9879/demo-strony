@@ -1839,13 +1839,13 @@ body::after {
   border-color: rgba(0, 0, 0, .12);
 }
 
-/* ═══════ WIDOK KOMPUTEROWY (ZOOM & MULTI-COLUMN) ═══════ */
+/* ═══════ WIDOK KOMPUTEROWY (BEZ SZTUCZNEGO ZOOMU) ═══════ */
 @media (min-width: 1024px) {
 
   body.view-home #app,
   body.view-subcats #app,
   body.view-menu #app {
-    max-width: 1000px;
+    max-width: 720px;
   }
 
   body.view-home .grid {
@@ -1859,20 +1859,19 @@ body::after {
 
   body.view-subcats .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
 
   body.view-menu .modes {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
 
   body.view-home #app>div,
   body.view-subcats #app>div,
   body.view-menu #app>div {
-    zoom: 1.2;
-    justify-content: center;
+    justify-content: flex-start;
   }
 }
 
@@ -2043,7 +2042,9 @@ body {
 
 #app {
   overflow-x: hidden !important;
-  max-width: 100% !important;
+  max-width: 720px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
   box-sizing: border-box !important;
 }
 
