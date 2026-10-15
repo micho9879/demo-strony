@@ -1430,19 +1430,40 @@ function renderQuickNav(count, prefix = 'clip-') {
   if (count <= 1) return '';
   let pills = '';
   for (let i = 0; i < count; i++) {
-    pills += `<button type="button" class="q-pill ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Skocz do ${i + 1}">${i + 1}</button>`;
+    pills += `<button type="button" class="q-pill ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Skocz do pytania ${i + 1}">${i + 1}</button>`;
   }
   return `
     <div class="q-nav-bar" id="q-nav-bar">
+      <button type="button" class="q-nav-arrow q-nav-arrow--left" id="q-nav-prev" aria-label="Przewiń w lewo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
       <div class="q-nav-scroll" id="q-nav-scroll">
         ${pills}
       </div>
+      <button type="button" class="q-nav-arrow q-nav-arrow--right" id="q-nav-next" aria-label="Przewiń w prawo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
     </div>
   `;
 }
 
 function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
   if (!scrollContainer) return;
+
+  // Przewijanie strzałkami lewo / prawo
+  const btnPrev = document.getElementById('q-nav-prev');
+  const btnNext = document.getElementById('q-nav-next');
+
+  if (btnPrev) {
+    btnPrev.onclick = () => {
+      scrollContainer.scrollBy({ left: -240, behavior: 'smooth' });
+    };
+  }
+  if (btnNext) {
+    btnNext.onclick = () => {
+      scrollContainer.scrollBy({ left: 240, behavior: 'smooth' });
+    };
+  }
 
   // Przewijanie poziome kółkiem myszy na PC
   scrollContainer.addEventListener('wheel', (e) => {

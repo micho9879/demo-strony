@@ -1869,12 +1869,47 @@ body.view-home .grid .crd {
   top: 0;
   z-index: 35;
   background: var(--bg);
-  padding: 8px 12px 10px;
-  margin: 0 -16px 14px;
+  padding: 10px 8px 12px;
+  margin: 0 -16px 16px;
   border-bottom: 1px solid var(--brd-subtle);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition: background-color .3s var(--ease), border-color .3s var(--ease);
+}
+
+.q-nav-arrow {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--brd-subtle);
+  background: var(--card);
+  color: var(--txt2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  box-shadow: var(--sh);
+}
+
+.q-nav-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.q-nav-arrow:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--card-hover, rgba(245, 184, 79, 0.1));
+  transform: scale(1.08);
+}
+
+.q-nav-arrow:active {
+  transform: scale(0.95);
 }
 
 .q-nav-scroll {
@@ -1883,54 +1918,60 @@ body.view-home .grid .crd {
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none !important; /* Ukryj brzydki scrollbar Firefox */
+  -ms-overflow-style: none !important; /* IE / Edge */
   scroll-behavior: smooth;
-  padding: 2px 4px 6px;
+  padding: 4px 6px;
+  flex: 1;
+  mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
 }
 
+/* Całkowicie ukryj brzydki pasek przewijania Chrome / Edge / Windows */
 .q-nav-scroll::-webkit-scrollbar {
-  height: 5px;
-}
-.q-nav-scroll::-webkit-scrollbar-track {
-  background: rgba(128, 128, 128, 0.08);
-  border-radius: 4px;
-}
-.q-nav-scroll::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 4px;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .q-pill {
   flex-shrink: 0;
-  min-width: 40px;
-  height: 34px;
-  padding: 0 10px;
+  min-width: 42px;
+  height: 36px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--brd);
+  border-radius: 10px;
+  border: 1px solid var(--brd-subtle);
   background: var(--card);
   color: var(--txt);
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s var(--ease);
+  transition: all 0.22s var(--ease);
   user-select: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
 .q-pill:hover {
   border-color: var(--accent);
   color: var(--accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.q-pill:active {
+  transform: translateY(0);
 }
 
 .q-pill.active {
-  background: var(--accent) !important;
+  background: linear-gradient(135deg, var(--accent), #e5a93c) !important;
   color: #111 !important;
   border-color: var(--accent) !important;
-  font-weight: 700;
-  box-shadow: 0 2px 10px var(--accent-glow);
+  font-weight: 800;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  transform: scale(1.05);
 }
 
 .clip-card {
@@ -1940,12 +1981,21 @@ body.view-home .grid .crd {
 @media (min-width: 640px) {
   .q-nav-bar {
     top: 54px; /* poniżej sticky .top-nav na PC */
-    margin: 0 0 18px;
+    margin: 0 0 20px;
+    padding: 10px 14px;
     border-radius: var(--r);
     border: 1px solid var(--brd-subtle);
+    background: var(--card);
+    box-shadow: var(--sh);
   }
 
   .clip-card {
-    scroll-margin-top: 125px;
+    scroll-margin-top: 130px;
+  }
+}
+
+@media (max-width: 480px) {
+  .q-nav-arrow {
+    display: none; /* Na telefonach pełna szerokość dla palca */
   }
 }
