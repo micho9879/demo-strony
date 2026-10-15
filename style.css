@@ -181,7 +181,13 @@ body::after {
   flex-direction: column;
   flex: 1;
   height: 100%;
-  overflow-y: auto;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Animacja wejścia ── */
@@ -415,15 +421,18 @@ body::after {
 
 .crd__ic--multi {
   display: flex;
-  gap: 8px;
-  width: auto;
-  height: auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
   margin-bottom: 12px;
 }
 
 .crd__ic-img {
-  width: 60px;
-  height: 60px;
+  width: 44px;
+  height: 44px;
+  max-width: 18%;
+  object-fit: contain;
   filter: brightness(0) saturate(100%) invert(68%) sepia(74%) saturate(500%) hue-rotate(3deg) brightness(104%) contrast(101%);
 }
 
@@ -1889,7 +1898,11 @@ body.view-home .grid .crd {
   z-index: 35;
   background: var(--bg);
   padding: 10px 8px 12px;
-  margin: 0 -16px 16px;
+  margin: 0 0 16px 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: var(--r) !important;
   border-bottom: 1px solid var(--brd-subtle);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -2017,4 +2030,73 @@ body.view-home .grid .crd {
   .q-nav-arrow {
     display: none; /* Na telefonach pełna szerokość dla palca */
   }
+}
+
+/* ═══════ BLOKADA PRZESUWANIA STRONY NA BOKI (Mobile Anti-Horizontal Scroll) ═══════ */
+html,
+body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  position: relative;
+}
+
+#app {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.top-nav {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.top-title {
+  max-width: 50vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crd,
+.mbtn,
+.btn,
+.clip-card,
+.clip-list,
+.lbox,
+.stats-box,
+.rev,
+.ri,
+.pyt-kontener,
+.rbox,
+.resume-box,
+.modes,
+.grid,
+.hdr {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.r-acts,
+.btns {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.r-acts .btn,
+.btns .btn {
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  text-align: center;
+}
+
+.q-nav-scroll {
+  touch-action: pan-x !important;
 }

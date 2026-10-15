@@ -617,7 +617,7 @@ appEl.addEventListener('click', e => {
 function vHome() {
   appEl.innerHTML = `<div>
     <header class="hdr"><p>Wybierz rodzaj szkolenia</p></header>
-    <div class="grid" id="g" style="display:flex; justify-content:center; margin-top:32px"></div>
+    <div class="grid" id="g"></div>
   </div>`;
 
   const g = $('g');
