@@ -1,18 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════
-   Service Worker — Testy UDT
-   Cache-first dla statycznych zasobów, network-first dla danych JSON
-   Zmień CACHE_VER przy każdym deploy żeby wymusić odświeżenie.
+   Service Worker — Testy UDT (v57)
+   - Cache-first (0 ms, 0 transferu) dla HTML, CSS, JS, ikon SVG i zdjęć WebP/PNG
+   - Stale-While-Revalidate dla plików JSON z pytaniami (natychmiastowy odczyt z cache + cicha aktualizacja w tle)
+   Zmień CACHE_VER przy każdym deployu kodu, aby wymusić odświeżenie.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_VER = 'udt-v56';
+const CACHE_VER = 'udt-v57';
 
-// Pliki do precache przy instalacji
+// Pliki do precache przy instalacji (ładowane od razu, 0 opóźnień)
 const PRECACHE = [
   './',
   './index.html',
-  './style.css?v=56',
-  './app.js?v=56',
-  './img/bhp-icon.png'
+  './style.css?v=57',
+  './app.js?v=57',
+  './img/bhp-icon.png',
+  './icons/wozki-podnosnikowe.svg',
+  './icons/wozki-specjalizowane.svg',
+  './icons/podesty.svg',
+  './icons/zurawie-przenosne.svg',
+  './icons/zurawie-samojezdne.svg',
+  './icons/suwnice.svg'
 ];
 
 // ─── INSTALL: Precache kluczowych plików ────────────────────
@@ -23,7 +30,7 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-// ─── ACTIVATE: Usuń stare cache ─────────────────────────────
+// ─── ACTIVATE: Usuń stare wersje cache ──────────────────────
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -37,59 +44,49 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // NIE cachuj: Firebase, Firestore, analytics, Telegram, external CDN
+  // NIE cachuj: panelu CMS (/admin), Firebase, Firestore, Telegram, metod innych niż GET
   if (
+    e.request.method !== 'GET' ||
+    url.pathname.includes('/admin') ||
     url.hostname.includes('firebaseio') ||
     url.hostname.includes('googleapis') ||
     url.hostname.includes('gstatic') ||
     url.hostname.includes('firebase') ||
     url.hostname.includes('telegram') ||
     url.hostname.includes('api.telegram') ||
-    url.hostname.includes('cloudflare') ||
-    e.request.method !== 'GET'
+    url.hostname.includes('unpkg.com') ||
+    url.hostname.includes('cdnjs.cloudflare.com')
   ) {
     return;
   }
 
-  // Pliki JSON z danymi (pytania, opisy) — network-first z cache fallback
+  // Pliki JSON z danymi (pytania, obsługa techniczna, baza wiedzy, materiały)
+  // Stale-While-Revalidate: jeśli są w cache -> zwróć NATYCHMIAST (0 ms!), a w tle odśwież cache
   if (url.pathname.endsWith('.json')) {
     e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_VER).then(c => c.put(e.request, clone));
-          }
-          return res;
+      caches.open(CACHE_VER).then(cache =>
+        cache.match(e.request).then(cached => {
+          const networkFetch = fetch(e.request)
+            .then(res => {
+              if (res && res.ok) {
+                cache.put(e.request, res.clone());
+              }
+              return res;
+            })
+            .catch(() => cached);
+          return cached || networkFetch;
         })
-        .catch(() => caches.match(e.request))
+      )
     );
     return;
   }
 
-  // GitHub raw SVG ikony — cache-first
-  if (url.hostname.includes('raw.githubusercontent.com')) {
-    e.respondWith(
-      caches.match(e.request).then(cached => {
-        if (cached) return cached;
-        return fetch(e.request).then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_VER).then(c => c.put(e.request, clone));
-          }
-          return res;
-        });
-      })
-    );
-    return;
-  }
-
-  // Wszystko inne (HTML, CSS, JS, obrazki) — cache-first
+  // Wszystkie pozostałe zasoby statyczne (HTML, CSS, JS, ikony SVG, zdjęcia WebP/PNG) — Cache-First
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        if (res.ok && url.origin === self.location.origin) {
+        if (res && res.ok && (url.origin === self.location.origin || url.hostname.includes('raw.githubusercontent.com'))) {
           const clone = res.clone();
           caches.open(CACHE_VER).then(c => c.put(e.request, clone));
         }

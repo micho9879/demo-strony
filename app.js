@@ -33,9 +33,10 @@ const GITHUB_RAW = 'https://raw.githubusercontent.com/bhpcomplexwloszczowa/zdjec
 const LS_SVG_CACHE = 'udt_svg_v2';
 
 async function loadSvg(el, name) {
-  if (I[name]) { el.innerHTML = I[name]; return; }
+  if (I[name]) { if (el) el.innerHTML = I[name]; return; }
   try {
-    const r = await fetch(GITHUB_RAW + '/icons/' + IC_FILES[name]);
+    let r = await fetch('icons/' + IC_FILES[name]);
+    if (!r.ok) r = await fetch(GITHUB_RAW + '/icons/' + IC_FILES[name]);
     let svg = await r.text();
     svg = svg.replace(/<\?xml.*?\?>\s*/i, '')
       .replace(/fill="#[A-Fa-f0-9]{6}"/gi, 'fill="currentColor"')
@@ -423,25 +424,91 @@ lbVp.addEventListener('wheel', e => {
   zoomAt(Z.s + delta, e.clientX, e.clientY);
 }, { passive: false });
 
-// ─── LOCAL STORAGE (auth per kategoria) ───────────────────
-function getAuth(c) {
+// ─── LOCAL STORAGE (auth globalne dla UDT + per moduł dla BHP) ───
+const LS_AUTH_TS = 'udt_auth_ts';
+const AUTH_TTL_MS = 12 * 60 * 60 * 1000; // 12 godzin bez ponownego odpytywania Firebase
+
+function getAuthMap() {
   try {
     const raw = localStorage.getItem(LS_AUTH);
-    if (!raw) return c ? '' : {};
+    if (!raw) return {};
     const a = JSON.parse(raw);
-    if (typeof a !== 'object' || a === null) { localStorage.removeItem(LS_AUTH); return c ? '' : {}; }
-    return c ? (a[c] || '') : a;
-  } catch { localStorage.removeItem(LS_AUTH); return c ? '' : {}; }
+    return (typeof a === 'object' && a !== null) ? a : {};
+  } catch {
+    return {};
+  }
 }
-function setAuth(c, p) { const a = getAuth(); a[c] = p; localStorage.setItem(LS_AUTH, JSON.stringify(a)); }
+
+function getAuth(c) {
+  const a = getAuthMap();
+  if (!c) return a;
+  if (isBhpCat(c)) return a[c] || '';
+  // Wszystkie kursy UDT współdzielą jedno hasło globalne (__udt__)
+  return a['__udt__'] || a[c] || '';
+}
+
+function setAuth(c, p) {
+  const a = getAuthMap();
+  if (isBhpCat(c)) {
+    a[c] = p;
+  } else {
+    a['__udt__'] = p;
+    if (c) a[c] = p;
+  }
+  localStorage.setItem(LS_AUTH, JSON.stringify(a));
+  markAuthVerified(c, p);
+}
+
+function markAuthVerified(c, p) {
+  const key = isBhpCat(c) ? c : '__udt__';
+  SESSION_AUTH_OK[key] = p;
+  if (c) SESSION_AUTH_OK[c] = p;
+  try {
+    const ts = JSON.parse(localStorage.getItem(LS_AUTH_TS) || '{}');
+    ts[key] = { p, t: Date.now() };
+    localStorage.setItem(LS_AUTH_TS, JSON.stringify(ts));
+  } catch {}
+}
+
+function isAuthRecentlyVerified(c, p) {
+  if (!p) return false;
+  const key = isBhpCat(c) ? c : '__udt__';
+  if (SESSION_AUTH_OK[key] === p || SESSION_AUTH_OK[c] === p) return true;
+  try {
+    const ts = JSON.parse(localStorage.getItem(LS_AUTH_TS) || '{}');
+    const entry = ts[key];
+    if (entry && entry.p === p && (Date.now() - entry.t) < AUTH_TTL_MS) {
+      SESSION_AUTH_OK[key] = p;
+      if (c) SESSION_AUTH_OK[c] = p;
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 function delAuth(c) {
   if (c) {
-    const a = getAuth();
-    delete a[c];
+    const a = getAuthMap();
+    if (isBhpCat(c)) {
+      delete a[c];
+      delete SESSION_AUTH_OK[c];
+    } else {
+      delete a['__udt__'];
+      for (const k of (GROUPS.udt ? GROUPS.udt.cats : [])) {
+        delete a[k];
+        delete SESSION_AUTH_OK[k];
+      }
+      delete SESSION_AUTH_OK['__udt__'];
+    }
     localStorage.setItem(LS_AUTH, JSON.stringify(a));
-    delete SESSION_AUTH_OK[c];
+    try {
+      const ts = JSON.parse(localStorage.getItem(LS_AUTH_TS) || '{}');
+      delete ts[isBhpCat(c) ? c : '__udt__'];
+      localStorage.setItem(LS_AUTH_TS, JSON.stringify(ts));
+    } catch {}
   } else {
     localStorage.removeItem(LS_AUTH);
+    localStorage.removeItem(LS_AUTH_TS);
     for (const k in SESSION_AUTH_OK) delete SESSION_AUTH_OK[k];
   }
 }
@@ -493,46 +560,12 @@ function fmt(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + Str
 function shuf(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[b[i], b[j]] = [b[j], b[i]]; } return b; }
 function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
 
-// ─── FIREBASE AUTH (globalne hasło) ─────────────────────────
-let unsubAuth = null;
-
-function clearAuthListener() {
-  if (unsubAuth) {
-    unsubAuth();
-    unsubAuth = null;
-  }
-}
-
-function startAuthListener(authKey) {
-  clearAuthListener();
-  if (S.group === 'bhp') {
-    // authKey = login::haslo
-    const [lVal, pVal] = authKey.split('::');
-    unsubAuth = onSnapshot(doc(db, "konta-bhp", lVal), (snap) => {
-      if (!snap.exists() || snap.data().haslo !== pVal || snap.data().kurs !== S.cat) {
-        clearAuthListener();
-        delAuth(S.cat);
-        if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
-        alert("Twoja sesja wygasła, ponieważ dostęp do kursu został cofnięty.");
-        go('login');
-      }
-    });
-  } else {
-    // UDT logowanie globalne
-    unsubAuth = onSnapshot(doc(db, "kursy-udt", 'udt-haslo'), (snap) => {
-      if (!snap.exists() || snap.data().haslo !== authKey) {
-        clearAuthListener();
-        delAuth(S.cat);
-        if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
-        alert("Twoja sesja wygasła, ponieważ hasło dostępowe zostało zmienione.");
-        go('login');
-      }
-    });
-  }
-}
+// ─── FIREBASE AUTH (oszczędzanie limitów — brak onSnapshot, weryfikacja z cache) ───
+function clearAuthListener() {}
+function startAuthListener() {}
 
 async function verifyAuth(grp, cat, login, pass) {
-  if (grp === 'bhp') {
+  if (grp === 'bhp' || isBhpCat(cat)) {
     const dSnap = await getDoc(doc(db, "konta-bhp", login));
     if (dSnap.exists() && dSnap.data().haslo === pass && dSnap.data().kurs === cat) {
       return true;
@@ -549,6 +582,7 @@ async function verifyAuth(grp, cat, login, pass) {
 
 const Q_CACHE = {};
 const SESSION_AUTH_OK = {};
+let SHARED_OTC_CACHE = null;
 
 async function getQs(c) {
   if (Q_CACHE[c]) {
@@ -562,10 +596,17 @@ async function getQs(c) {
   }
 
   const bhp = isBhpCat(c);
+  // Wspólna kolekcja "Obsługa techniczna codzienna" dla wszystkich kursów UDT (data/udt_obsluga.json)
+  const otcPromise = bhp
+    ? Promise.resolve({ items: [] })
+    : (SHARED_OTC_CACHE
+        ? Promise.resolve({ items: SHARED_OTC_CACHE })
+        : fetch(`data/udt_obsluga.json`).then(r => r.ok ? r.json() : { items: [] }));
+
   // Równoległe pobieranie plików naraz (Promise.allSettled)
   const [qRes, opRes, wiRes, matRes, setRes] = await Promise.allSettled([
     fetch(`data/${c}.json`).then(r => r.ok ? r.json() : []),
-    bhp ? Promise.resolve({ items: [] }) : fetch(`data/${c}_opisy.json`).then(r => r.ok ? r.json() : { items: [] }),
+    otcPromise,
     bhp ? Promise.resolve({ items: [] }) : fetch(`data/${c}_wiedza.json`).then(r => r.ok ? r.json() : { items: [] }),
     bhp ? fetch(`data/${c}_materialy.json`).then(r => r.ok ? r.json() : { items: [] }) : Promise.resolve({ items: [] }),
     fetch(`data/${c}_ustawienia.json`).then(r => r.ok ? r.json() : { rules: [] })
@@ -594,6 +635,7 @@ async function getQs(c) {
   });
 
   const opisy = normItems(dOp.items);
+  if (!bhp && opisy.length > 0) SHARED_OTC_CACHE = opisy;
   const wiedza = normItems(dWi.items);
   const materialy = normItems(dMat.items);
 
@@ -624,6 +666,7 @@ const topTitle = $('top-title');
 
 function go(v) {
   if (S.eInt && v !== 'exam') { clearInterval(S.eInt); S.eInt = null; }
+  S.view = v;
 
   // Title logic
   if (S.cat && !['home', 'subcats'].includes(v)) {
@@ -729,13 +772,14 @@ function vHome() {
 
     // Render ikon
     if (grp.icons) {
-      // Grupa z wieloma ikonkami (np. UDT)
+      // Grupa z wieloma ikonkami (np. UDT) — ładowane lokalnie z ./icons/ (0ms z cache)
       const icEl = d.querySelector('.crd__ic');
       icEl.classList.add('crd__ic--multi');
       icEl.innerHTML = '';
       grp.icons.forEach(file => {
         const img = document.createElement('img');
-        img.src = GITHUB_RAW + '/icons/' + file;
+        img.src = 'icons/' + file;
+        img.onerror = () => { img.onerror = null; img.src = GITHUB_RAW + '/icons/' + file; };
         img.alt = '';
         img.className = 'crd__ic-img';
         icEl.appendChild(img);
@@ -790,14 +834,15 @@ async function pickCat(k) {
   const sv = getAuth(k);
   if (sv) {
     try {
-      if (S.group === 'bhp') {
+      if (S.group === 'bhp' || isBhpCat(k)) {
         const [lgn, pw] = sv.split('::');
         if (lgn && pw) {
-          const authPromise = SESSION_AUTH_OK[k] ? Promise.resolve(true) : verifyAuth(S.group, k, lgn, pw);
+          const authPromise = isAuthRecentlyVerified(k, sv)
+            ? Promise.resolve(true)
+            : verifyAuth('bhp', k, lgn, pw);
           const [authOk] = await Promise.all([authPromise, getQs(k)]);
           if (authOk) {
-            SESSION_AUTH_OK[k] = true;
-            startAuthListener(sv);
+            markAuthVerified(k, sv);
             S.studentLogin = lgn;
             history.pushState({ testActive: true }, "Testy", "#test");
             go('menu');
@@ -805,11 +850,12 @@ async function pickCat(k) {
           }
         }
       } else {
-        const authPromise = SESSION_AUTH_OK[k] ? Promise.resolve(true) : verifyAuth(S.group, k, null, sv);
+        const authPromise = isAuthRecentlyVerified(k, sv)
+          ? Promise.resolve(true)
+          : verifyAuth('udt', k, null, sv);
         const [authOk] = await Promise.all([authPromise, getQs(k)]);
         if (authOk) {
-          SESSION_AUTH_OK[k] = true;
-          startAuthListener(sv);
+          markAuthVerified(k, sv);
           history.pushState({ testActive: true }, "Testy", "#test");
           go('menu');
           return;
@@ -818,7 +864,7 @@ async function pickCat(k) {
     } catch (e) {
       // Brak połączenia — NIE kasuj hasła, wpuść na podstawie zapisanego auth
       await getQs(k);
-      if (S.group === 'bhp') {
+      if (S.group === 'bhp' || isBhpCat(k)) {
         const [lgn] = sv.split('::');
         S.studentLogin = lgn;
       }
@@ -836,35 +882,39 @@ async function pickCat(k) {
 // ═════════════════════════════════════════════════════════════
 function vLogin() {
   const c = CATS[S.cat];
-  const isBhp = S.group === 'bhp';
+  const isBhp = S.group === 'bhp' || isBhpCat(S.cat);
+  const savedBhpLgn = isBhp ? (localStorage.getItem('udt_bhp_lgn_' + S.cat) || '') : '';
   
   let loginHtml = '';
   if (isBhp) {
     loginHtml = `
       <div class="fld"><label for="lgn">LOGIN</label>
-        <input type="text" id="lgn" placeholder="Wpisz swój login..." autocomplete="off"/>
+        <input type="text" id="lgn" name="username" value="${savedBhpLgn}" placeholder="Wpisz swój login..." autocomplete="username"/>
       </div>
     `;
+  } else {
+    // Ukryte pole username dla menedżerów haseł w przeglądarce
+    loginHtml = `<input type="text" name="username" value="kursant-udt" autocomplete="username" style="display:none" aria-hidden="true" tabindex="-1"/>`;
   }
 
   appEl.innerHTML = `<div>
-    <div class="lbox" style="margin-top:0">
+    <form class="lbox" id="login-form" style="margin-top:0" autocomplete="on" onsubmit="return false">
       <h2>${c.label}</h2><p>${isBhp ? 'Zaloguj się na swoje konto' : 'Wpisz hasło otrzymane od instruktora'}</p>
       ${loginHtml}
       <div class="fld"><label for="pw">HASŁO</label>
         <div class="pw-wrapper">
-          <input type="password" id="pw" placeholder="••••••••" autocomplete="off"/>
+          <input type="password" id="pw" name="password" placeholder="••••••••" autocomplete="current-password"/>
           <button type="button" class="pw-eye" id="pw-eye" aria-label="Pokaż hasło">${I.eye}</button>
         </div>
         <div class="fld-err" id="er">${I.alrt}<span></span></div>
       </div>
       <label class="chk"><input type="checkbox" id="rem" checked/> Zapamiętaj mnie</label>
       <div style="text-align: center;">
-        <button class="btn btn--a" id="sub" style="min-width: 200px;">${I.key} <span>Zaloguj się</span></button>
+        <button type="submit" class="btn btn--a" id="sub" style="min-width: 200px;">${I.key} <span>Zaloguj się</span></button>
       </div>
-    </div></div>`;
+    </form></div>`;
 
-  const pw = $('pw'), er = $('er'), rem = $('rem'), btn = $('sub'), pwEye = $('pw-eye');
+  const form = $('login-form'), pw = $('pw'), er = $('er'), rem = $('rem'), btn = $('sub'), pwEye = $('pw-eye');
   const lgn = $('lgn'); // Może być null dla UDT
 
   pwEye.onclick = () => {
@@ -877,7 +927,8 @@ function vLogin() {
     }
   };
 
-  async function tryLog() {
+  async function tryLog(e) {
+    if (e && e.preventDefault) e.preventDefault();
     const v = pw.value.trim();
     const lVal = lgn ? lgn.value.trim() : null;
 
@@ -904,10 +955,15 @@ function vLogin() {
     try {
       const authOk = await verifyAuth(S.group, S.cat, lVal, v);
       if (authOk) {
-        SESSION_AUTH_OK[S.cat] = true;
         const authKey = isBhp ? `${lVal}::${v}` : v;
-        if (rem.checked) setAuth(S.cat, authKey);
-        startAuthListener(authKey);
+        if (isBhp && lVal) {
+          try { localStorage.setItem('udt_bhp_lgn_' + S.cat, lVal); } catch {}
+        }
+        if (rem.checked) {
+          setAuth(S.cat, authKey);
+        } else {
+          markAuthVerified(S.cat, authKey);
+        }
         if (isBhp) S.studentLogin = lVal;
         history.pushState({ testActive: true }, "Testy", "#test");
         await getQs(S.cat); go('menu');
@@ -924,9 +980,9 @@ function vLogin() {
       btnSpan.textContent = 'Zaloguj się';
     }
   }
+  form.onsubmit = tryLog;
   btn.onclick = tryLog;
-  pw.onkeydown = e => { if (e.key === 'Enter') tryLog(); };
-  requestAnimationFrame(() => pw.focus());
+  requestAnimationFrame(() => (isBhp && lgn && !lgn.value ? lgn : pw).focus());
 }
 function sErr(el, m) { el.querySelector('span').textContent = m; el.classList.add('on'); }
 
@@ -1747,6 +1803,134 @@ function bindToc(parentScrollEl, prefix = 'clip-') {
   };
 }
 
+// ─── FORMATOWANIE TEKSTU BOGATEGO (Markdown / Rich Text z CMS) ───
+function normMediaPath(u) {
+  if (!u) return '';
+  const s = String(u).trim();
+  return s.startsWith('/img/') ? s.substring(1) : s;
+}
+
+function formatInlineRich(line) {
+  let s = String(line);
+  // Obrazy Markdown: ![alt](url)
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, rawUrl) => {
+    const src = normMediaPath(rawUrl.replace(/^["']|["']$/g, '').split(/\s+/)[0]);
+    const cleanAlt = (alt || 'Ilustracja').replace(/"/g, '&quot;');
+    return `<img src="${src}" alt="${cleanAlt}" class="q-img rich-img" data-src="${src}" loading="lazy" onerror="this.style.display='none'"/>`;
+  });
+  // Obrazy HTML: <img ... src="..." ...>
+  s = s.replace(/<img\s+[^>]*src=["']([^"']+)["'][^>]*>/gi, (_, rawUrl) => {
+    const src = normMediaPath(rawUrl);
+    return `<img src="${src}" alt="Ilustracja" class="q-img rich-img" data-src="${src}" loading="lazy" onerror="this.style.display='none'"/>`;
+  });
+  // Linki Markdown: [tekst](url)
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)/g, (_, label, url) => {
+    const href = normMediaPath(url);
+    return `<a href="${href}" target="_blank" rel="noopener" class="rich-link">${label}</a>`;
+  });
+  // Pogrubienie + kursywa: ***tekst***
+  s = s.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // Pogrubienie: **tekst** lub __tekst__
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  // Kursywa: *tekst*
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  // Przekreślenie: ~~tekst~~
+  s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+  // Kod inline: `tekst`
+  s = s.replace(/`([^`]+)`/g, '<code class="rich-code">$1</code>');
+  return s;
+}
+
+function renderRichText(raw) {
+  if (!raw) return '';
+  const lines = String(raw).replace(/\r\n/g, '\n').split('\n');
+  let html = '';
+  let inUl = false;
+  let inOl = false;
+  let inTable = false;
+
+  const closeLists = () => {
+    if (inUl) { html += '</ul>'; inUl = false; }
+    if (inOl) { html += '</ol>'; inOl = false; }
+    if (inTable) { html += '</tbody></table></div>'; inTable = false; }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      closeLists();
+      continue;
+    }
+
+    // Linia pozioma: --- lub ***
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+      closeLists();
+      html += '<hr class="rich-hr"/>';
+      continue;
+    }
+
+    // Nagłówki: # .. ####
+    const hMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (hMatch) {
+      closeLists();
+      const lvl = Math.min(4, hMatch[1].length + 1); // h2..h4
+      html += `<h${lvl} class="rich-h">${formatInlineRich(hMatch[2])}</h${lvl}>`;
+      continue;
+    }
+
+    // Cytat: > tekst
+    if (/^>\s?/.test(trimmed)) {
+      closeLists();
+      html += `<blockquote class="rich-quote">${formatInlineRich(trimmed.replace(/^>\s?/, ''))}</blockquote>`;
+      continue;
+    }
+
+    // Lista punktowana: - tekst lub * tekst lub • tekst
+    const ulMatch = trimmed.match(/^([-*•])\s+(.+)$/);
+    if (ulMatch) {
+      if (inOl) { html += '</ol>'; inOl = false; }
+      if (inTable) { html += '</tbody></table></div>'; inTable = false; }
+      if (!inUl) { html += '<ul class="rich-ul">'; inUl = true; }
+      html += `<li>${formatInlineRich(ulMatch[2])}</li>`;
+      continue;
+    }
+
+    // Lista numerowana: 1. tekst
+    const olMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+    if (olMatch) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inTable) { html += '</tbody></table></div>'; inTable = false; }
+      if (!inOl) { html += '<ol class="rich-ol">'; inOl = true; }
+      html += `<li>${formatInlineRich(olMatch[1])}</li>`;
+      continue;
+    }
+
+    // Tabela Markdown: | col1 | col2 |
+    if (trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 2) {
+      if (/^\|[\s\-:|]+\|$/.test(trimmed)) continue; // separator wiersza nagłówka
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      const cells = trimmed.slice(1, -1).split('|').map(c => formatInlineRich(c.trim()));
+      if (!inTable) {
+        html += `<div class="rich-table-wrap"><table class="rich-table"><thead><tr>${cells.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+        inTable = true;
+      } else {
+        html += `<tr>${cells.map(c => `<td>${c}</td>`).join('')}</tr>`;
+      }
+      continue;
+    }
+
+    closeLists();
+    html += `<p class="rich-p">${formatInlineRich(line)}</p>`;
+  }
+
+  closeLists();
+  return html;
+}
+
 function renderList(title, data, subtitle) {
   let content = (!data || data.length === 0) ? `<div class="clip-empty">
       <div class="clip-empty__ic">${I.file}</div>
@@ -1772,8 +1956,8 @@ function renderList(title, data, subtitle) {
         </div>
         ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
         ${hasAnswer ? `<div class="odp-lista">
-          <div class="odp-btn odp-btn--ok" style="cursor:default;align-items:flex-start">
-            <span class="odp-btn__t" style="white-space:pre-wrap;text-align:left">${q.answer}</span>
+          <div class="odp-btn odp-btn--ok rich-ans-box" style="cursor:default;align-items:flex-start">
+            <div class="odp-btn__t rich-content">${renderRichText(q.answer)}</div>
           </div>
         </div>` : ''}
         ${extras}
@@ -1834,20 +2018,30 @@ document.addEventListener('DOMContentLoaded', () => {
   go('home');
 });
 
-window.addEventListener('popstate', (e) => {
-  if (S.cat) {
-    const c = confirm("Czy na pewno chcesz opuścić trwający test? Twój postęp zostanie utracony.");
+window.addEventListener('popstate', () => {
+  if (!S.cat) return;
+  // W trakcie egzaminu pytaj o potwierdzenie
+  if (S.view === 'exam') {
+    const c = confirm("Czy na pewno chcesz przerwać egzamin i wrócić do menu?");
     if (c) {
-      clearAuthListener();
       if (S.eInt) { clearInterval(S.eInt); S.eInt = null; }
-      delAuth(S.cat);
-      S.cat = null;
-      history.replaceState(null, "", window.location.pathname);
-      go(S.group ? 'subcats' : 'home');
+      history.pushState({ testActive: true }, "Testy UDT", "#test");
+      go('menu');
     } else {
       history.pushState({ testActive: true }, "Testy UDT", "#test");
     }
+    return;
   }
+  // W podwidoku kursu (Baza pytań, Trening, Obsługa techniczna, Baza wiedzy, Schowek, Wynik) -> wróć do menu kursu BEZ kasowania hasła!
+  if (S.view && !['menu', 'login', 'subcats', 'home'].includes(S.view)) {
+    history.pushState({ testActive: true }, "Testy UDT", "#test");
+    go('menu');
+    return;
+  }
+  // W menu kursu -> wyjdź do listy kategorii BEZ kasowania zapamiętanego hasła!
+  S.cat = null;
+  history.replaceState(null, "", window.location.pathname);
+  go(S.group ? 'subcats' : 'home');
 });
 
 // ─── SERVICE WORKER (Cachowanie zasobów) ────────────────────────
