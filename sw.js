@@ -4,14 +4,14 @@
    Zmień CACHE_VER przy każdym deploy żeby wymusić odświeżenie.
    ═══════════════════════════════════════════════════════════════ */
 
-const CACHE_VER = 'udt-v55';
+const CACHE_VER = 'udt-v56';
 
 // Pliki do precache przy instalacji
 const PRECACHE = [
   './',
   './index.html',
-  './style.css?v=55',
-  './app.js?v=55',
+  './style.css?v=56',
+  './app.js?v=56',
   './img/bhp-icon.png'
 ];
 

@@ -2156,3 +2156,403 @@ body,
 [data-theme="light"] .pol-modal__content {
   scrollbar-color: rgba(0, 0, 0, .2) transparent;
 }
+
+/* ═══════ IKONY MENU (Nowe kolory zakładek) ═══════ */
+.mbtn__ic--p {
+  background: rgba(168, 85, 247, .12);
+  color: #a855f7;
+}
+
+.mbtn__ic--c {
+  background: rgba(6, 182, 212, .12);
+  color: #06b6d4;
+}
+
+/* ═══════ PASKI POSTĘPU NA PRZYCISKACH MENU (Baza pytań / Trening) ═══════ */
+.mbtn__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.mbtn__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.mbtn__top .mbtn__t {
+  margin-bottom: 0;
+}
+
+.mbtn__badge {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, .14);
+  color: #60a5fa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mbtn__badge--g {
+  background: rgba(52, 211, 153, .14);
+  color: #34d399;
+}
+
+[data-theme="light"] .mbtn__badge {
+  background: rgba(37, 99, 235, .12);
+  color: #2563eb;
+}
+
+[data-theme="light"] .mbtn__badge--g {
+  background: rgba(5, 150, 105, .12);
+  color: #059669;
+}
+
+.mbtn__bar {
+  width: 100%;
+  height: 5px;
+  background: rgba(128, 128, 128, .16);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.mbtn__bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  border-radius: 99px;
+  transition: width .35s var(--ease);
+}
+
+.mbtn__bar-fill--g {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* ═══════ KOMPAKTOWE MENU UDT NA TELEFONIE (1 ekran bez scrolla) ═══════ */
+.hdr--compact {
+  margin-bottom: 10px;
+}
+
+.modes--udt {
+  margin-top: 12px;
+  gap: 10px;
+}
+
+@media (max-width: 639px) {
+  body.view-menu #app {
+    padding-top: 54px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .hdr--compact {
+    margin-bottom: 6px !important;
+    padding: 0 !important;
+  }
+
+  .hdr--compact h1 {
+    font-size: 1.15rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important;
+  }
+
+  .hdr--compact p {
+    font-size: .75rem !important;
+    margin: 0 !important;
+  }
+
+  .modes--udt {
+    margin-top: 6px !important;
+    gap: 7px !important;
+  }
+
+  .modes--udt .mbtn {
+    padding: 9px 12px !important;
+    gap: 10px !important;
+  }
+
+  .modes--udt .mbtn__ic {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .modes--udt .mbtn__ic svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .modes--udt .mbtn__t {
+    font-size: .86rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .modes--udt .mbtn__d {
+    font-size: .71rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .modes--udt .mbtn__bar {
+    height: 4px !important;
+    margin-top: 4px !important;
+  }
+
+  .modes--udt .mbtn__badge {
+    font-size: .68rem !important;
+    padding: 1px 7px !important;
+  }
+
+  body.view-menu .app-footer {
+    padding: 8px 10px 4px !important;
+  }
+
+  body.view-menu .btn-privacy {
+    font-size: .74rem !important;
+  }
+}
+
+/* ═══════ INTERAKTYWNY SPIS TREŚCI (Obsługa techniczna / Baza wiedzy / Materiały BHP) ═══════ */
+.toc-box {
+  background: var(--card);
+  border: 1px solid var(--brd-subtle);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r);
+  margin: 0 0 18px 0;
+  box-shadow: var(--sh);
+  overflow: hidden;
+  scroll-margin-top: 70px;
+  transition: background-color .3s var(--ease), border-color .3s var(--ease);
+}
+
+[data-theme="light"] .toc-box {
+  border-color: rgba(0, 0, 0, .14);
+  border-left: 4px solid var(--accent);
+}
+
+.toc-hdr {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  background: transparent;
+  border: none;
+  color: var(--txt);
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color .2s var(--ease);
+}
+
+.toc-hdr:hover {
+  background: var(--hover);
+}
+
+.toc-hdr__left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.toc-hdr__left svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.toc-hdr__title {
+  font-size: .92rem;
+  font-weight: 700;
+}
+
+.toc-hdr__count {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(245, 184, 79, .14);
+  color: var(--accent);
+}
+
+.toc-hdr__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--txt2);
+  transition: transform .25s var(--ease);
+}
+
+.toc-hdr__chevron svg {
+  width: 18px;
+  height: 18px;
+}
+
+.toc-box--collapsed .toc-hdr__chevron {
+  transform: rotate(-90deg);
+}
+
+.toc-box--collapsed .toc-list {
+  display: none;
+}
+
+.toc-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--brd-subtle);
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.toc-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--brd-subtle);
+  color: var(--txt);
+  font-family: var(--font);
+  font-size: .84rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color .2s var(--ease), color .2s var(--ease);
+}
+
+.toc-item:last-child {
+  border-bottom: none;
+}
+
+.toc-item:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+.toc-item.active {
+  background: rgba(245, 184, 79, .1);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.toc-item__num {
+  flex-shrink: 0;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: rgba(245, 184, 79, .14);
+  color: var(--accent);
+  font-size: .75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toc-item__txt {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.toc-item__arr {
+  flex-shrink: 0;
+  color: var(--txt3);
+  display: inline-flex;
+}
+
+.toc-item__arr svg {
+  width: 15px;
+  height: 15px;
+}
+
+.clip-card__hdr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.clip-card__hdr-row .clip-card__num {
+  margin-bottom: 0;
+}
+
+.clip-card__top-link {
+  background: rgba(245, 184, 79, .1);
+  border: 1px solid rgba(245, 184, 79, .25);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: .7rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background-color .2s var(--ease), transform .15s var(--ease);
+}
+
+.clip-card__top-link:hover {
+  background: rgba(245, 184, 79, .2);
+  transform: translateY(-1px);
+}
+
+/* ═══════ PEŁNY PRZEGLĄD PYTAŃ PO EGZAMINIE UDT ═══════ */
+.rev-card {
+  margin-bottom: 14px;
+}
+
+.rev-card--ok {
+  border-left: 4px solid var(--ok) !important;
+}
+
+.rev-card--bad {
+  border-left: 4px solid var(--err) !important;
+}
+
+.rev-card__hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.rev-card__hdr .clip-card__num {
+  margin-bottom: 0;
+}
+
+.rev-badge {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.rev-badge--ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border: 1px solid var(--ok-b);
+}
+
+.rev-badge--bad {
+  background: var(--err-bg);
+  color: var(--err);
+  border: 1px solid var(--err-b);
+}
+
+.odp-btn__tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  opacity: .92;
+}
+

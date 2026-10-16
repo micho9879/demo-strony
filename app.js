@@ -101,15 +101,39 @@ const LS_AUTH = 'udt_auth';
 const LS_PROGRESS = 'udt_progress';
 const LS_THEME = 'udt_theme';
 const LS_HARD = 'udt_hard';
+const LS_VIEWED = 'udt_viewed';
 const EXAM_N = 15;
 const EXAM_T = 30 * 60;
 const PASS_COUNT = 11;
+const BHP_PASS_PCT = 80;
 
 // Zmienna przechowująca pobrane ustawienia egzaminu z CMS
 const EXAM_RULES = {};
 
+const isBhpCat = c => typeof c === 'string' && c.startsWith('bhp');
+
+// Liczba pytań i próg zaliczenia dla danego kursu
+// UDT: 15 pytań, próg 11. BHP: liczba pytań i % z CMS (domyślnie 15 / 80%), próg zaokrąglony w górę.
+function examConf(cat, totalQs) {
+  if (isBhpCat(cat)) {
+    const conf = EXAM_RULES[cat] || {};
+    const want = parseInt(conf.count, 10) > 0 ? parseInt(conf.count, 10) : EXAM_N;
+    const n = Math.max(1, Math.min(want, totalQs || want));
+    const pctRaw = parseInt(conf.passPct, 10);
+    const passPct = pctRaw > 0 && pctRaw <= 100 ? pctRaw : BHP_PASS_PCT;
+    return { n, pass: Math.ceil(n * passPct / 100), passPct };
+  }
+  const n = Math.min(EXAM_N, totalQs || EXAM_N);
+  return { n, pass: PASS_COUNT, passPct: null };
+}
+
 // ─── GENERATOR EGZAMINU ────────────────────────────
 function generateExam(allQs, cat) {
+  // BHP: bez losowania — pierwsze X pytań w kolejności z CMS
+  if (isBhpCat(cat)) {
+    return allQs.slice(0, examConf(cat, allQs.length).n);
+  }
+
   const conf = EXAM_RULES[cat] || { rules: [] };
   const rules = conf.rules || [];
 
@@ -169,7 +193,7 @@ const GROUPS = {
 
 // ─── STAN ───────────────────────────────────────────────────
 const S = {
-  group: null, cat: null, qs: [], opisy: [],
+  group: null, cat: null, qs: [], opisy: [], wiedza: [], materialy: [],
   bi: 0,
   ti: 0, tAns: false,
   eq: [], ei: 0, ea: [], et: EXAM_T, eInt: null,
@@ -435,6 +459,15 @@ function markDone(cat, qId) {
 }
 function getDoneCount(cat) { const p = getProgress(); return p[cat] ? p[cat].length : 0; }
 
+// ─── PRZEJRZANE W BAZIE PYTAŃ (osobno od treningu) ──────────
+function getViewed() { try { return JSON.parse(localStorage.getItem(LS_VIEWED)) || {}; } catch { return {}; } }
+function markViewed(cat, qId) {
+  const v = getViewed();
+  if (!v[cat]) v[cat] = [];
+  if (!v[cat].includes(qId)) { v[cat].push(qId); localStorage.setItem(LS_VIEWED, JSON.stringify(v)); }
+}
+function getViewedCount(cat) { const v = getViewed(); return v[cat] ? v[cat].length : 0; }
+
 // ─── SCHOWEK TRUDNYCH PYTAŃ ─────────────────────────────────
 function getHard() { try { return JSON.parse(localStorage.getItem(LS_HARD)) || {}; } catch { return {}; } }
 function isHard(cat, qId) { const h = getHard(); return h[cat] ? h[cat].includes(qId) : false; }
@@ -521,20 +554,27 @@ async function getQs(c) {
   if (Q_CACHE[c]) {
     S.qs = Q_CACHE[c].qs;
     S.opisy = Q_CACHE[c].opisy;
+    S.wiedza = Q_CACHE[c].wiedza;
+    S.materialy = Q_CACHE[c].materialy;
     EXAM_RULES[c] = Q_CACHE[c].rules;
     S.catTotals[c] = S.qs.length;
     return S.qs;
   }
 
-  // Równoległe pobieranie 3 plików naraz (Promise.allSettled) zamiast sekwencyjnego
-  const [qRes, opRes, setRes] = await Promise.allSettled([
+  const bhp = isBhpCat(c);
+  // Równoległe pobieranie plików naraz (Promise.allSettled)
+  const [qRes, opRes, wiRes, matRes, setRes] = await Promise.allSettled([
     fetch(`data/${c}.json`).then(r => r.ok ? r.json() : []),
-    fetch(`data/${c}_opisy.json`).then(r => r.ok ? r.json() : { items: [] }),
+    bhp ? Promise.resolve({ items: [] }) : fetch(`data/${c}_opisy.json`).then(r => r.ok ? r.json() : { items: [] }),
+    bhp ? Promise.resolve({ items: [] }) : fetch(`data/${c}_wiedza.json`).then(r => r.ok ? r.json() : { items: [] }),
+    bhp ? fetch(`data/${c}_materialy.json`).then(r => r.ok ? r.json() : { items: [] }) : Promise.resolve({ items: [] }),
     fetch(`data/${c}_ustawienia.json`).then(r => r.ok ? r.json() : { rules: [] })
   ]);
 
   const data = qRes.status === 'fulfilled' ? qRes.value : [];
   const dOp = opRes.status === 'fulfilled' ? opRes.value : { items: [] };
+  const dWi = wiRes.status === 'fulfilled' ? wiRes.value : { items: [] };
+  const dMat = matRes.status === 'fulfilled' ? matRes.value : { items: [] };
   const dSet = setRes.status === 'fulfilled' ? setRes.value : { rules: [] };
 
   const rawQs = Array.isArray(data) ? data : (data.questions || []);
@@ -546,23 +586,31 @@ async function getQs(c) {
     return item;
   });
 
-  const rawOp = dOp.items || [];
-  const opisy = rawOp.map(q => {
+  const normItems = (arr) => (arr || []).map(q => {
     const item = { ...q };
     if (item.image && item.image.startsWith('/img/')) item.image = item.image.substring(1);
+    if (item.file && item.file.startsWith('/img/')) item.file = item.file.substring(1);
     return item;
   });
 
+  const opisy = normItems(dOp.items);
+  const wiedza = normItems(dWi.items);
+  const materialy = normItems(dMat.items);
+
   const rules = {
+    count: dSet.count,
+    passPct: dSet.pass_pct,
     rules: (dSet.rules || []).map(r => ({
       count: r.count,
       ranges: [[r.min, r.max]]
     }))
   };
 
-  Q_CACHE[c] = { qs, opisy, rules };
+  Q_CACHE[c] = { qs, opisy, wiedza, materialy, rules };
   S.qs = qs;
   S.opisy = opisy;
+  S.wiedza = wiedza;
+  S.materialy = materialy;
   EXAM_RULES[c] = rules;
   S.catTotals[c] = qs.length;
 
@@ -609,7 +657,7 @@ function go(v) {
   }
 
   // Wyloguj (Logout) logic
-  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'bhpList'].includes(v)) {
+  if (['menu', 'cheat', 'train', 'resume', 'exam', 'signature', 'result', 'clipboard', 'opisyList', 'wiedzaList', 'materialyList', 'bhpList'].includes(v)) {
     topLo.style.display = '';
     topLo.onclick = () => {
       clearAuthListener();
@@ -627,7 +675,7 @@ function go(v) {
   const m = {
     home: vHome, subcats: vSubcats, login: vLogin, menu: vMenu, resume: vResume,
     cheat: vCheat, train: vTrain, exam: vExam, signature: vSignature, result: vResult, clipboard: vClipboard,
-    opisyList: vOpisyList, bhpList: vBhpList
+    opisyList: vOpisyList, wiedzaList: vWiedzaList, materialyList: vMaterialyList, bhpList: vBhpList
   };
   if (m[v]) m[v]();
   document.body.className = 'view-' + v;
@@ -890,78 +938,101 @@ function vMenu() {
   const isBhp = S.group === 'bhp';
 
   if (isBhp) {
+    const ec = examConf(S.cat, S.qs.length);
+    const matCount = S.materialy ? S.materialy.length : 0;
     appEl.innerHTML = `<div>
-      <div class="stats-box">
-        <div class="stats-box__title">Wybrany moduł: ${c.label}</div>
-        <div class="stats-box__row">
-          <span class="stats-box__label">Baza wiedzy</span>
-          <span class="stats-box__val">${S.qs.length} pytań</span>
-        </div>
-      </div>
-
       <header class="hdr" style="padding-top:4px">
         <h1 style="font-size:1.5rem">Wybierz <span class="a">tryb</span></h1>
+        <p>${c.label}</p>
       </header>
       <div class="modes">
-        <button class="mbtn" id="m-bhplist">
-          <div class="mbtn__ic mbtn__ic--b">${I.file}</div>
-          <div>
-            <div class="mbtn__t">Baza pytań (Lista)</div>
-            <div class="mbtn__d">Przeglądaj wszystkie pytania z zaznaczonymi odpowiedziami</div>
+        <button class="mbtn" id="m-mat">
+          <div class="mbtn__ic mbtn__ic--b">${I.book}</div>
+          <div class="mbtn__body">
+            <div class="mbtn__t">Materiały szkoleniowe</div>
+            <div class="mbtn__d">${matCount > 0 ? matCount + ' zagadnień szkoleniowych' : 'Materiały i zagadnienia do szkolenia'}</div>
           </div>
         </button>
         <button class="mbtn" id="m-e">
           <div class="mbtn__ic mbtn__ic--r">${I.fChk}</div>
-          <div>
-            <div class="mbtn__t">Egzamin (Losowe)</div>
-            <div class="mbtn__d">Rozwiąż test i uzyskaj podpisany certyfikat</div>
+          <div class="mbtn__body">
+            <div class="mbtn__t">Egzamin</div>
+            <div class="mbtn__d">${ec.n} pytań • 30 min • próg: ${ec.pass}/${ec.n} (${ec.passPct}%)</div>
           </div>
         </button>
       </div>
     </div>`;
 
-    $('m-bhplist').onclick = () => go('bhpList');
+    $('m-mat').onclick = () => go('materialyList');
     $('m-e').onclick = startExam;
     return;
   }
 
-  const n = Math.min(EXAM_N, S.qs.length);
-  const passInfo = `${PASS_COUNT}/${n}`;
-  const done = getDoneCount(S.cat);
   const total = S.qs.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const n = Math.min(EXAM_N, total);
+  const passInfo = `${PASS_COUNT}/${n}`;
+  const done = Math.min(getDoneCount(S.cat), total);
+  const donePct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const viewed = Math.min(getViewedCount(S.cat), total);
+  const viewedPct = total > 0 ? Math.round((viewed / total) * 100) : 0;
 
-  appEl.innerHTML = `<div>
-    <div class="stats-box">
-      <div class="stats-box__title">Postęp w ${c.label}</div>
-      <div class="stats-box__row">
-        <span class="stats-box__label">Przerobione w treningu</span>
-        <span class="stats-box__val">${done} / ${total} pytań</span>
-      </div>
-      <div class="stats-bar">
-        <div class="stats-bar__fill" style="width:${pct}%"></div>
-      </div>
+  appEl.innerHTML = `<div class="udt-menu-wrap">
+    <header class="hdr hdr--compact">
+      <h1 style="font-size:1.3rem">Wybierz <span class="a">tryb</span></h1>
+    </header>
+    <div class="modes modes--udt">
+      <button class="mbtn" id="ma">
+        <div class="mbtn__ic mbtn__ic--b">${I.book}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__top">
+            <span class="mbtn__t">Baza pytań (Ściąga)</span>
+            <span class="mbtn__badge mbtn__badge--b">${viewed} / ${total}</span>
+          </div>
+          <div class="mbtn__d">Przejrzane w bazie: ${viewed} / ${total} pytań (${viewedPct}%)</div>
+          <div class="mbtn__bar"><div class="mbtn__bar-fill mbtn__bar-fill--b" style="width:${viewedPct}%"></div></div>
+        </div>
+      </button>
+      <button class="mbtn" id="mb">
+        <div class="mbtn__ic mbtn__ic--g">${I.brain}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__top">
+            <span class="mbtn__t">Trening (Krok po kroku)</span>
+            <span class="mbtn__badge mbtn__badge--g">${done} / ${total}</span>
+          </div>
+          <div class="mbtn__d">Przerobione w treningu: ${done} / ${total} pytań (${donePct}%)</div>
+          <div class="mbtn__bar"><div class="mbtn__bar-fill" style="width:${donePct}%"></div></div>
+        </div>
+      </button>
+      <button class="mbtn" id="mc">
+        <div class="mbtn__ic mbtn__ic--r">${I.fChk}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__t">Egzamin (Losowe)</div>
+          <div class="mbtn__d">${n} pytań • 30 min • próg: ${passInfo}</div>
+        </div>
+      </button>
+      <button class="mbtn" id="mf">
+        <div class="mbtn__ic mbtn__ic--b">${I.file}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__t">Obsługa techniczna codzienna</div>
+          <div class="mbtn__d">${S.opisy && S.opisy.length ? S.opisy.length + ' pytań w bazie' : 'Pytania i odpowiedzi obsługi technicznej'}</div>
+        </div>
+      </button>
+      <button class="mbtn" id="mg">
+        <div class="mbtn__ic mbtn__ic--b">${I.file}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__t">Baza wiedzy</div>
+          <div class="mbtn__d">${S.wiedza && S.wiedza.length ? S.wiedza.length + ' pytań w bazie' : 'Dodatkowe pytania i zagadnienia'}</div>
+        </div>
+      </button>
+      <button class="mbtn mbtn--hard" id="md">
+        <div class="mbtn__ic mbtn__ic--y">${I.clip}</div>
+        <div class="mbtn__body">
+          <div class="mbtn__t">Trudne pytania (Schowek)</div>
+          <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań • pokaż instruktorowi</div>
+        </div>
+      </button>
     </div>
-
-    <header class="hdr" style="padding-top:4px">
-      <h1 style="font-size:1.5rem">Wybierz <span class="a">tryb</span></h1></header>
-    <div class="modes">
-      <button class="mbtn" id="ma"><div class="mbtn__ic mbtn__ic--b">${I.book}</div>
-        <div><div class="mbtn__t">Baza pytań (Ściąga)</div>
-        <div class="mbtn__d">Przeglądaj pytania z zaznaczoną poprawną odpowiedzią</div></div></button>
-      <button class="mbtn" id="mb"><div class="mbtn__ic mbtn__ic--g">${I.brain}</div>
-        <div><div class="mbtn__t">Trening (Krok po kroku)</div>
-        <div class="mbtn__d">Ucz się — natychmiastowy feedback, zapamiętywanie postępu</div></div></button>
-      <button class="mbtn" id="mc"><div class="mbtn__ic mbtn__ic--r">${I.fChk}</div>
-        <div><div class="mbtn__t">Egzamin (Losowe)</div>
-        <div class="mbtn__d">${n} pytań • 30 min • próg: ${passInfo}</div></div></button>
-      <button class="mbtn mbtn--hard" id="md"><div class="mbtn__ic mbtn__ic--y">${I.clip}</div>
-        <div><div class="mbtn__t">Trudne pytania (Schowek)</div>
-        <div class="mbtn__d"><span id="hard-count">${getHardCount(S.cat)}</span> zapisanych pytań • pokaż instruktorowi</div></div></button>
-      <button class="mbtn" id="mf"><div class="mbtn__ic mbtn__ic--b">${I.file}</div>
-        <div><div class="mbtn__t">Opisy i Definicje</div>
-        <div class="mbtn__d">${S.opisy && S.opisy.length ? S.opisy.length + ' opisów w bazie' : 'Baza opisów i schematów (z CMS)'}</div></div></button>
-    </div></div>`;
+  </div>`;
 
   $('ma').onclick = () => { S.bi = 0; go('cheat'); };
   $('mb').onclick = () => {
@@ -970,8 +1041,9 @@ function vMenu() {
     else { S.ti = 0; S.tAns = false; go('train'); }
   };
   $('mc').onclick = startExam;
-  $('md').onclick = () => go('clipboard');
   $('mf').onclick = () => go('opisyList');
+  $('mg').onclick = () => go('wiedzaList');
+  $('md').onclick = () => go('clipboard');
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -998,6 +1070,7 @@ function vResume() {
 // ═════════════════════════════════════════════════════════════
 function vCheat() {
   const q = S.qs[S.bi], tot = S.qs.length, pct = ((S.bi + 1) / tot) * 100;
+  if (q && q.id != null) markViewed(S.cat, q.id);
   appEl.innerHTML = `<div>
     <div class="prog"><div class="prog__top">
       <span class="prog__l">Baza pytań</span>
@@ -1296,7 +1369,8 @@ function vResult() {
     if (a === q.correct) sc++;
     else mis.push({ q: q.question, img: q.image || '', u: a >= 0 ? q.options[a] : 'Brak odpowiedzi', c: q.options[q.correct] });
   });
-  const pass = sc >= PASS_COUNT, pct = Math.round(sc / tot * 100);
+  const ec = examConf(S.cat, tot);
+  const pass = sc >= ec.pass, pct = tot > 0 ? Math.round(sc / tot * 100) : 0;
   const isBhp = S.group === 'bhp';
 
   let actsHtml = '';
@@ -1316,42 +1390,106 @@ function vResult() {
     `;
   }
 
+  let revHtml = '';
+  if (isBhp) {
+    revHtml = mis.length ? `<div class="rev"><h2>Przegląd błędów (${mis.length})</h2>
+      ${mis.map(m => `<div class="ri"><div class="ri__q">${m.q}</div>
+        ${m.img ? `<img class="ri__img" src="${m.img}" alt="Grafika do pytania" loading="lazy">` : ''}
+        <div class="ri__r ri__r--b"><span class="dot dot--r"></span><span>Twoja: ${m.u}</span></div>
+        <div class="ri__r ri__r--g"><span class="dot dot--g"></span><span>Poprawna: ${m.c}</span></div></div>`).join('')}
+    </div>` : `<div class="rev" style="text-align:center;margin-top:24px">
+      <p style="color:var(--ok);font-weight:600">🏆 Bezbłędnie!</p></div>`;
+  } else {
+    // UDT: wszystkie pytania z egzaminu (pozytywne i negatywne) oraz wszystkie 4 opcje odpowiedzi w każdym pytaniu
+    const cards = S.eq.map((q, i) => {
+      const uIdx = S.ea[i];
+      const cIdx = q.correct;
+      const isOk = uIdx === cIdx;
+      const statusBadge = isOk
+        ? `<span class="rev-badge rev-badge--ok">✓ Poprawnie</span>`
+        : (uIdx < 0
+            ? `<span class="rev-badge rev-badge--none">Brak odpowiedzi</span>`
+            : `<span class="rev-badge rev-badge--bad">✗ Błędna odpowiedź</span>`);
+
+      const optsHtml = (q.options || []).map((opt, oIdx) => {
+        const isCorrectOpt = oIdx === cIdx;
+        const isUserOpt = oIdx === uIdx;
+        let cls = 'odp-btn odp-btn--lk';
+        let tag = '';
+        if (isCorrectOpt && isUserOpt) {
+          cls += ' odp-btn--ok';
+          tag = `<span class="odp-btn__tag odp-btn__tag--ok">✓ Twoja i poprawna</span>`;
+        } else if (isCorrectOpt) {
+          cls += ' odp-btn--ok';
+          tag = `<span class="odp-btn__tag odp-btn__tag--ok">✓ Poprawna</span>`;
+        } else if (isUserOpt) {
+          cls += ' odp-btn--bad';
+          tag = `<span class="odp-btn__tag odp-btn__tag--bad">✗ Twoja odpowiedź</span>`;
+        }
+        return `<div class="${cls}">
+          <span class="odp-btn__l">${LT[oIdx] || (oIdx + 1)}</span>
+          <span class="odp-btn__t">${opt}</span>
+          ${tag}
+        </div>`;
+      }).join('');
+
+      return `<div class="clip-card rev-card ${isOk ? 'rev-card--ok' : 'rev-card--bad'}">
+        <div class="clip-card__top">
+          <div class="clip-card__q">
+            <div class="rev-card__hdr">
+              <span class="clip-card__num" style="margin-bottom:0">Pytanie ${i + 1} z ${tot}</span>
+              ${statusBadge}
+            </div>
+            ${q.question}
+          </div>
+        </div>
+        ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" loading="lazy" onerror="this.style.display='none'"/>` : ''}
+        <div class="odp-lista">${optsHtml}</div>
+      </div>`;
+    }).join('');
+
+    revHtml = `<div class="rev">
+      <h2>Przegląd wszystkich pytań (${tot}) — Dobrze: ${sc} • Błędnie: ${tot - sc}</h2>
+      <div class="clip-list">${cards}</div>
+    </div>`;
+  }
+
   appEl.innerHTML = `<div>
     <header class="hdr" style="padding-top:16px">
       <h1 style="font-size:1.5rem">Wynik <span class="a">egzaminu</span></h1>
       <p>${CATS[S.cat].label}</p></header>
     <div class="rbox">
       <div class="r-ico ${pass ? 'r-ico--p' : 'r-ico--f'}">${pass ? I.chkC : I.xC}</div>
-      <div class="r-sub">Twój wynik</div>
+      <div class="r-sub">Twój wynik (próg: ${ec.pass}/${tot})</div>
       <div class="r-sc ${pass ? 'r-sc--p' : 'r-sc--f'}">${sc}/${tot}</div>
       <div class="r-sub">${pct}% poprawnych</div>
       <span class="r-badge ${pass ? 'r-badge--p' : 'r-badge--f'}">
         ${pass ? '👏 Zdałeś! Gratulacje!' : 'Nie zdałeś. Spróbuj ponownie.'}</span>
       ${isBhp && pass ? `<div style="margin-top:12px; font-weight:600; color:#555;">Podpis: ${S.studentSignature}<br/>Data: ${S.examDate}</div>` : ''}
     </div>
-    ${mis.length ? `<div class="rev"><h2>Przegląd błędów (${mis.length})</h2>
-      ${mis.map(m => `<div class="ri"><div class="ri__q">${m.q}</div>
-        ${m.img ? `<img class="ri__img" src="${m.img}" alt="Grafika do pytania" loading="lazy">` : ''}
-        <div class="ri__r ri__r--b"><span class="dot dot--r"></span><span>Twoja: ${m.u}</span></div>
-        <div class="ri__r ri__r--g"><span class="dot dot--g"></span><span>Poprawna: ${m.c}</span></div></div>`).join('')}
-    </div>` : `<div class="rev" style="text-align:center;margin-top:24px">
-      <p style="color:var(--ok);font-weight:600">🏆 Bezłędnie!</p></div>`}
+    ${revHtml}
     <div class="r-acts">
       ${actsHtml}
     </div></div>`;
 
+  bindImgs(appEl);
+  appEl.querySelectorAll('.ri__img').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.onclick = () => olb(img.src);
+  });
+
   if ($('rr')) $('rr').onclick = startExam;
   if ($('rh')) $('rh').onclick = () => go('menu');
   if ($('r-pdf')) {
-      $('r-pdf').style.display = 'none';
-    }
-
-    if (isBhp && pass && !S.savedResult) {
-      S.savedResult = true;
-      saveBhpResult(S.studentLogin, S.studentSignature, S.examDateObj, sc, tot, pct);
-      sendBhpToTelegram(S.studentLogin, S.studentSignature, sc, tot, pct, S.examDate);
-    }
+    $('r-pdf').style.display = 'none';
   }
+
+  if (isBhp && pass && !S.savedResult) {
+    S.savedResult = true;
+    saveBhpResult(S.studentLogin, S.studentSignature, S.examDateObj, sc, tot, pct);
+    sendBhpToTelegram(S.studentLogin, S.studentSignature, sc, tot, pct, S.examDate);
+  }
+}
 
   async function sendBhpToTelegram(login, signature, sc, tot, pct, dateStr) {
     try {
@@ -1490,108 +1628,98 @@ function vResult() {
   }
 }
 
-function renderQuickNav(count, prefix = 'clip-') {
-  if (count <= 1) return '';
-  let pills = '';
-  for (let i = 0; i < count; i++) {
-    pills += `<button type="button" class="q-pill ${i === 0 ? 'active' : ''}" data-idx="${i}" aria-label="Skocz do pytania ${i + 1}">${i + 1}</button>`;
-  }
+// ─── INTERAKTYWNY SPIS TREŚCI (TOC) ─────────────────────────
+function renderToc(data) {
+  if (!data || data.length === 0) return '';
+  const items = data.map((q, idx) => `
+    <button type="button" class="toc-item ${idx === 0 ? 'active' : ''}" data-idx="${idx}">
+      <span class="toc-item__num">${idx + 1}.</span>
+      <span class="toc-item__txt">${q.question || ('Pytanie ' + (idx + 1))}</span>
+    </button>
+  `).join('');
+
   return `
-    <div class="q-nav-bar" id="q-nav-bar">
-      <button type="button" class="q-nav-arrow q-nav-arrow--left" id="q-nav-prev" aria-label="Przewiń w lewo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <div class="q-nav-scroll" id="q-nav-scroll">
-        ${pills}
+    <nav class="toc-box" id="toc-box" aria-label="Spis treści">
+      <div class="toc-hdr" id="toc-toggle" role="button" tabindex="0" aria-expanded="true">
+        <span class="toc-hdr__title">📋 Spis treści <span class="toc-hdr__cnt">(${data.length})</span></span>
+        <span class="toc-hdr__btn"><span id="toc-toggle-txt">Zwiń</span> ▲</span>
       </div>
-      <button type="button" class="q-nav-arrow q-nav-arrow--right" id="q-nav-next" aria-label="Przewiń w prawo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-      </button>
-    </div>
+      <div class="toc-list" id="toc-list">
+        ${items}
+      </div>
+    </nav>
   `;
 }
 
-function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
-  if (!scrollContainer) return;
+function bindToc(parentScrollEl, prefix = 'clip-') {
+  const tocBox = $('toc-box');
+  const tocList = $('toc-list');
+  const tocToggle = $('toc-toggle');
+  if (!tocBox || !tocList) return;
 
-  // Przewijanie strzałkami lewo / prawo
-  const btnPrev = document.getElementById('q-nav-prev');
-  const btnNext = document.getElementById('q-nav-next');
-
-  if (btnPrev) {
-    btnPrev.onclick = () => {
-      scrollContainer.scrollBy({ left: -240, behavior: 'smooth' });
-    };
-  }
-  if (btnNext) {
-    btnNext.onclick = () => {
-      scrollContainer.scrollBy({ left: 240, behavior: 'smooth' });
-    };
-  }
-
-  // Przewijanie poziome kółkiem myszy na PC
-  scrollContainer.addEventListener('wheel', (e) => {
-    if (e.deltaY !== 0) {
-      e.preventDefault();
-      scrollContainer.scrollLeft += e.deltaY;
-    }
-  }, { passive: false });
-
-  // Który element faktycznie się przewija: na telefonie #app>div, na PC okno
   const isElScroller = () => {
     if (!parentScrollEl) return false;
     const oy = getComputedStyle(parentScrollEl).overflowY;
     return oy === 'auto' || oy === 'scroll';
   };
   const getTop = () => isElScroller() ? parentScrollEl.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
-  const viewTop = () => isElScroller() ? parentScrollEl.getBoundingClientRect().top : 0;
-  const bar = document.getElementById('q-nav-bar');
-  const barBottom = () => bar ? bar.getBoundingClientRect().bottom : viewTop();
+  const viewTop = () => {
+    const hdr = $('main-header');
+    if (isElScroller()) return parentScrollEl.getBoundingClientRect().top;
+    return hdr ? hdr.getBoundingClientRect().bottom : 0;
+  };
+  const scrollToY = (targetTop) => {
+    if (isElScroller()) {
+      parentScrollEl.scrollTo({ top: targetTop, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+      document.documentElement.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+  };
 
-  const pills = Array.from(scrollContainer.querySelectorAll('.q-pill'));
-  const cards = pills.map(p => document.getElementById(prefix + p.dataset.idx));
-
-  // Wyśrodkowanie pigułki tylko w poziomie (nie rusza pionowego scrolla strony)
-  function centerPill(pill, smooth) {
-    const left = pill.offsetLeft - (scrollContainer.clientWidth - pill.offsetWidth) / 2;
-    scrollContainer.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
+  if (tocToggle) {
+    tocToggle.onclick = () => {
+      const collapsed = tocBox.classList.toggle('toc-box--collapsed');
+      tocToggle.setAttribute('aria-expanded', String(!collapsed));
+      const btnSpan = tocToggle.querySelector('.toc-hdr__btn');
+      if (btnSpan) btnSpan.innerHTML = collapsed ? `<span id="toc-toggle-txt">Rozwiń</span> ▼` : `<span id="toc-toggle-txt">Zwiń</span> ▲`;
+    };
   }
 
-  let current = -1;
-  function setActive(i, smooth = true) {
-    if (i === current || !pills[i]) return;
-    if (pills[current]) pills[current].classList.remove('active');
-    pills[i].classList.add('active');
+  const items = Array.from(tocList.querySelectorAll('.toc-item'));
+  const cards = items.map(it => document.getElementById(prefix + it.dataset.idx));
+
+  let current = 0;
+  function setActive(i) {
+    if (i === current || !items[i]) return;
+    if (items[current]) items[current].classList.remove('active');
+    items[i].classList.add('active');
     current = i;
-    centerPill(pills[i], smooth);
   }
-  pills.forEach(p => p.classList.remove('active'));
-  setActive(0, false);
 
-  // Blokada podświetlania w trakcie skoku po kliknięciu
   let lockUntil = 0;
-
-  pills.forEach((btn, i) => {
+  items.forEach((btn, i) => {
     btn.onclick = () => {
       const target = cards[i];
       if (!target) return;
       setActive(i);
       lockUntil = Date.now() + 900;
-      const offset = target.getBoundingClientRect().top - barBottom() - 12;
-      const targetTop = getTop() + offset;
-      if (isElScroller()) {
-        parentScrollEl.scrollTo({ top: targetTop, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: targetTop, behavior: 'smooth' });
-        document.documentElement.scrollTo({ top: targetTop, behavior: 'smooth' });
-      }
+      const offset = target.getBoundingClientRect().top - viewTop() - 12;
+      scrollToY(Math.max(0, getTop() + offset));
     };
   });
 
-  // Podświetlanie aktualnie widocznego pytania podczas scrollowania
+  // Przyciski powrotu „↑ Spis treści" na kartach pytań
+  appEl.querySelectorAll('.clip-card__top-link').forEach(btn => {
+    btn.onclick = () => {
+      const offset = tocBox.getBoundingClientRect().top - viewTop() - 12;
+      scrollToY(Math.max(0, getTop() + offset));
+    };
+  });
+
   let ticking = false;
   function onScroll() {
-    if (!scrollContainer.isConnected) {
+    if (!tocBox.isConnected) {
       if (parentScrollEl) parentScrollEl.removeEventListener('scroll', onScroll);
       window.removeEventListener('scroll', onScroll);
       return;
@@ -1600,7 +1728,7 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
     ticking = true;
     requestAnimationFrame(() => {
       ticking = false;
-      const line = barBottom() + 24;
+      const line = viewTop() + 40;
       let idx = 0;
       for (let i = 0; i < cards.length; i++) {
         if (cards[i] && cards[i].getBoundingClientRect().top <= line) idx = i;
@@ -1622,29 +1750,43 @@ function bindQuickNav(scrollContainer, parentScrollEl, prefix = 'clip-') {
 function renderList(title, data, subtitle) {
   let content = (!data || data.length === 0) ? `<div class="clip-empty">
       <div class="clip-empty__ic">${I.file}</div>
-      <h2>Brak wpisów</h2>
-      <p>W tej kategorii nie ma jeszcze wprowadzonych opisów.<br/>Dodaj wpisy w panelu CMS (<strong>/admin</strong>), aby się tu pojawiły.</p>
+      <h2>Brak pytań w tej zakładce</h2>
+      <p>W tej kategorii nie dodano jeszcze żadnych pozycji.<br/>Dodaj je w panelu CMS (<strong>/admin</strong>), aby się tu pojawiły.</p>
     </div>` :
-    data.map((q, idx) => `
+    data.map((q, idx) => {
+      const hasAnswer = q.answer && String(q.answer).trim().length > 0;
+      const fileBtn = q.file ? `<a href="${q.file}" target="_blank" rel="noopener" class="btn btn--o btn--s" style="margin-top:10px;text-decoration:none">📄 Otwórz plik (PDF)</a>` : '';
+      const linkBtn = q.link ? `<a href="${q.link}" target="_blank" rel="noopener" class="btn btn--a btn--s" style="margin-top:10px;text-decoration:none">🔗 Otwórz materiał / wideo</a>` : '';
+      const extras = (fileBtn || linkBtn) ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${fileBtn}${linkBtn}</div>` : '';
+
+      return `
       <div class="clip-card" id="clip-${idx}" data-idx="${idx}">
         <div class="clip-card__top">
-          <div class="clip-card__q"><span class="clip-card__num">Wpis ${idx + 1}</span> ${q.question}</div>
-        </div>
-        ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
-        <div class="odp-lista">
-          <div class="odp-btn odp-btn--ok" style="cursor:default;align-items:flex-start">
-            <span class="odp-btn__t" style="white-space:pre-wrap;text-align:left">${q.answer || ''}</span>
+          <div class="clip-card__q">
+            <div class="clip-card__hdr-row">
+              <span class="clip-card__num" style="margin-bottom:0">Pytanie ${idx + 1}</span>
+              <button type="button" class="clip-card__top-link" title="Wróć do spisu treści">↑ Spis treści</button>
+            </div>
+            ${q.question}
           </div>
         </div>
+        ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
+        ${hasAnswer ? `<div class="odp-lista">
+          <div class="odp-btn odp-btn--ok" style="cursor:default;align-items:flex-start">
+            <span class="odp-btn__t" style="white-space:pre-wrap;text-align:left">${q.answer}</span>
+          </div>
+        </div>` : ''}
+        ${extras}
       </div>
-    `).join('');
+    `;
+    }).join('');
 
-  const quickNavHtml = (data && data.length > 1) ? renderQuickNav(data.length, 'clip-') : '';
+  const tocHtml = (data && data.length > 0) ? renderToc(data) : '';
 
   appEl.innerHTML = `<div>
     <header class="hdr"><h1 style="font-size:1.3rem">${title}</h1>
       <p>${subtitle}</p></header>
-    ${quickNavHtml}
+    ${tocHtml}
     <div class="clip-list">${content}</div>
     <div class="r-acts" style="margin-top:16px">
       <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
@@ -1652,47 +1794,29 @@ function renderList(title, data, subtitle) {
   </div>`;
 
   bindImgs(appEl);
-  if (data && data.length > 1) {
-    bindQuickNav($('q-nav-scroll'), appEl.firstElementChild, 'clip-');
+  if (data && data.length > 0) {
+    bindToc(appEl.firstElementChild, 'clip-');
   }
   $('clip-back').onclick = () => go('menu');
 }
 
 function vOpisyList() {
-  renderList("Opisy i Definicje", S.opisy, CATS[S.cat].label);
+  renderList("Obsługa techniczna codzienna", S.opisy, CATS[S.cat].label);
+}
+
+function vWiedzaList() {
+  renderList("Baza wiedzy", S.wiedza, CATS[S.cat].label);
+}
+
+function vMaterialyList() {
+  renderList("Materiały szkoleniowe", S.materialy, CATS[S.cat].label);
 }
 
 // ═════════════════════════════════════════════════════════════
-// WIDOK — Lista pytań (BHP)
+// WIDOK — Lista pytań (BHP — zachowany pomocniczo, ukryty w menu)
 // ═════════════════════════════════════════════════════════════
 function vBhpList() {
-  const content = S.qs.map((q, idx) => `
-    <div class="clip-card" id="clip-${idx}" data-idx="${idx}">
-      <div class="clip-card__top">
-        <div class="clip-card__q"><span class="clip-card__num">${idx + 1}.</span> ${q.question}</div>
-      </div>
-      ${q.image ? `<img src="${q.image}" alt="Ilustracja" class="q-img" data-src="${q.image}" onerror="this.style.display='none'"/>` : ''}
-      <div class="odp-lista">
-        <div class="odp-btn odp-btn--lk odp-btn--ok" style="cursor:default; align-items:flex-start">
-          <span class="odp-btn__t" style="white-space:pre-wrap; text-align:left">${q.options[q.correct]}</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
-
-  appEl.innerHTML = `<div>
-    <header class="hdr"><h1 style="font-size:1.3rem">Baza pytań: ${CATS[S.cat].label}</h1>
-      <p>Pełna lista pytań i odpowiedzi</p></header>
-    ${renderQuickNav(S.qs.length, 'clip-')}
-    <div class="clip-list">${content}</div>
-    <div class="r-acts" style="margin-top:16px">
-      <button class="btn btn--o" id="clip-back">${I.aL} Wróć do menu</button>
-    </div>
-  </div>`;
-
-  bindImgs(appEl);
-  bindQuickNav($('q-nav-scroll'), appEl.firstElementChild, 'clip-');
-  $('clip-back').onclick = () => go('menu');
+  go('menu');
 }
 
 // ─── HELPER ─────────────────────────────────────────────────

@@ -34,17 +34,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/podesty_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/podesty_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -78,17 +90,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/suwnice_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/suwnice_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -122,17 +146,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/wozki-podnosnikowe_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/wozki-podnosnikowe_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -166,17 +202,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/wozki-specjalizowane_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/wozki-specjalizowane_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -210,17 +258,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/zurawie-przenosne_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/zurawie-przenosne_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -254,17 +314,29 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
-      - label: "Opisy"
+      - label: "Obsługa techniczna codzienna"
         name: "opisy"
         file: "data/zurawie-samojezdne_opisy.json"
         fields:
-          - label: "Lista Opisów"
+          - label: "Lista pytań"
             name: "items"
             widget: "list"
             fields:
               - {label: "ID", name: "id", widget: "number", required: false}
-              - {label: "Tytuł / Pytanie", name: "question", widget: "string"}
-              - {label: "Opis / Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+      - label: "Baza wiedzy"
+        name: "wiedza"
+        file: "data/zurawie-samojezdne_wiedza.json"
+        fields:
+          - label: "Lista pytań"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "ID", name: "id", widget: "number", required: false}
+              - {label: "Pytanie", name: "question", widget: "string"}
+              - {label: "Odpowiedź", name: "answer", widget: "text"}
               - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
@@ -298,18 +370,25 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Materiały szkoleniowe"
+        name: "materialy"
+        file: "data/bhp-1_materialy.json"
+        fields:
+          - label: "Lista materiałów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "Tytuł", name: "question", widget: "string"}
+              - {label: "Treść", name: "answer", widget: "text", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - {label: "Plik PDF (opcjonalnie)", name: "file", widget: "file", required: false}
+              - {label: "Link, np. YouTube (opcjonalnie)", name: "link", widget: "string", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-1_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań na egzamin"
-            name: "rules"
-            widget: "list"
-            required: false
-            fields:
-              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - {label: "Od ID", name: "min", widget: "number"}
-              - {label: "Do ID", name: "max", widget: "number"}
+          - {label: "Liczba pytań na egzaminie (bierze pierwsze X pytań z listy, w tej kolejności)", name: "count", widget: "number", value_type: "int", min: 1, default: 15}
+          - {label: "Próg zdawalności w % (np. 80)", name: "pass_pct", widget: "number", value_type: "int", min: 1, max: 100, default: 80}
 
   - name: "bhp-2"
     label: "BHP Moduł 2"
@@ -330,18 +409,25 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Materiały szkoleniowe"
+        name: "materialy"
+        file: "data/bhp-2_materialy.json"
+        fields:
+          - label: "Lista materiałów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "Tytuł", name: "question", widget: "string"}
+              - {label: "Treść", name: "answer", widget: "text", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - {label: "Plik PDF (opcjonalnie)", name: "file", widget: "file", required: false}
+              - {label: "Link, np. YouTube (opcjonalnie)", name: "link", widget: "string", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-2_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań na egzamin"
-            name: "rules"
-            widget: "list"
-            required: false
-            fields:
-              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - {label: "Od ID", name: "min", widget: "number"}
-              - {label: "Do ID", name: "max", widget: "number"}
+          - {label: "Liczba pytań na egzaminie (bierze pierwsze X pytań z listy, w tej kolejności)", name: "count", widget: "number", value_type: "int", min: 1, default: 15}
+          - {label: "Próg zdawalności w % (np. 80)", name: "pass_pct", widget: "number", value_type: "int", min: 1, max: 100, default: 80}
 
   - name: "bhp-3"
     label: "BHP Moduł 3"
@@ -362,18 +448,25 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Materiały szkoleniowe"
+        name: "materialy"
+        file: "data/bhp-3_materialy.json"
+        fields:
+          - label: "Lista materiałów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "Tytuł", name: "question", widget: "string"}
+              - {label: "Treść", name: "answer", widget: "text", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - {label: "Plik PDF (opcjonalnie)", name: "file", widget: "file", required: false}
+              - {label: "Link, np. YouTube (opcjonalnie)", name: "link", widget: "string", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-3_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań na egzamin"
-            name: "rules"
-            widget: "list"
-            required: false
-            fields:
-              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - {label: "Od ID", name: "min", widget: "number"}
-              - {label: "Do ID", name: "max", widget: "number"}
+          - {label: "Liczba pytań na egzaminie (bierze pierwsze X pytań z listy, w tej kolejności)", name: "count", widget: "number", value_type: "int", min: 1, default: 15}
+          - {label: "Próg zdawalności w % (np. 80)", name: "pass_pct", widget: "number", value_type: "int", min: 1, max: 100, default: 80}
 
   - name: "bhp-4"
     label: "BHP Moduł 4"
@@ -394,15 +487,23 @@ collections:
                 widget: "list"
                 field: {label: "Opcja", name: "option", widget: "string"}
               - {label: "Poprawna odpowiedź (1, 2, 3 lub 4)", name: "correct", widget: "number"}
+      - label: "Materiały szkoleniowe"
+        name: "materialy"
+        file: "data/bhp-4_materialy.json"
+        fields:
+          - label: "Lista materiałów"
+            name: "items"
+            widget: "list"
+            fields:
+              - {label: "Tytuł", name: "question", widget: "string"}
+              - {label: "Treść", name: "answer", widget: "text", required: false}
+              - {label: "Zdjęcie (opcjonalnie)", name: "image", widget: "image", required: false}
+              - {label: "Plik PDF (opcjonalnie)", name: "file", widget: "file", required: false}
+              - {label: "Link, np. YouTube (opcjonalnie)", name: "link", widget: "string", required: false}
       - label: "Ustawienia Egzaminu"
         name: "ustawienia"
         file: "data/bhp-4_ustawienia.json"
         fields:
-          - label: "Reguły losowania pytań na egzamin"
-            name: "rules"
-            widget: "list"
-            required: false
-            fields:
-              - {label: "Ile pytań wylosować z tego zakresu?", name: "count", widget: "number"}
-              - {label: "Od ID", name: "min", widget: "number"}
-              - {label: "Do ID", name: "max", widget: "number"}
+          - {label: "Liczba pytań na egzaminie (bierze pierwsze X pytań z listy, w tej kolejności)", name: "count", widget: "number", value_type: "int", min: 1, default: 15}
+          - {label: "Próg zdawalności w % (np. 80)", name: "pass_pct", widget: "number", value_type: "int", min: 1, max: 100, default: 80}
+
